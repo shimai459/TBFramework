@@ -4,17 +4,25 @@ namespace TBFramework
     /// 不继承单例模式的基类
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Singleton<T> where T:Singleton<T>,new()
+    public class Singleton<T> where T : Singleton<T>, new()
     {
         private static T instance;
-        public static T Instance{
-            get{
-                if(instance==null){
-                    instance=new T();
+
+        protected static readonly object lockObj = new object();
+        public static T Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    lock (lockObj)
+                    {
+                        instance = new T();
+                    }
                 }
-                    return instance;
+                return instance;
             }
         }
-        protected Singleton(){}
+        protected Singleton() { }
     }
 }
