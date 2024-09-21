@@ -14,15 +14,19 @@ namespace TBFramework.Pool
             /// <summary>
             /// 缓存池根对象的名字
             /// </summary>
-            public static string POOL_OBJECT_NAME="Pool";
+            public const string POOL_OBJECT_NAME="Pool";
             /// <summary>
             /// 每个缓存池父物体名字的后缀
             /// </summary>
-            public static string POOL_SINGLE_PARENT_EXTENSION="Pool Parent";
+            public const string POOL_SINGLE_PARENT_EXTENSION="Pool Parent";
             /// <summary>
             /// 默认缓存池中物体的数量
             /// </summary>
-            public static int POOL_MAX_NUMBER=1000;
+            public const int POOL_MAX_NUMBER=1000;
+            /// <summary>
+            /// 缓存池是否开启整理功能
+            /// </summary> 
+            public const bool POOL_FINISH_OPEN = true;
         
         #endregion
     }
