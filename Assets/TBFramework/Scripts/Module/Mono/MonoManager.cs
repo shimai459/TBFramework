@@ -9,41 +9,59 @@ namespace TBFramework.Mono
     {
         private MonoController controller;
 
-        public MonoManager(){
-            controller=new GameObject("MonoController",typeof(MonoController)).GetComponent<MonoController>();
+        public MonoManager()
+        {
+            controller = new GameObject("MonoController", typeof(MonoController)).GetComponent<MonoController>();
         }
 
-        public void AddUpdateListener(Action action){
-            controller.updateEvent+=action;
+        public void AddUpdateListener(Action action)
+        {
+            controller.updateEvent += action;
         }
 
-        public void RemoveUpdateListener(Action action){
-            controller.updateEvent-=action;
+        public void RemoveUpdateListener(Action action)
+        {
+            controller.updateEvent -= action;
         }
 
-        public Coroutine StartCoroutine(string methodName){
-            return controller.StartCoroutine(methodName);
+        public void AddFixedUpdateListener(Action action)
+        {
+            controller.fixedUpdateEvent += action;
         }
-        public Coroutine StartCoroutine(IEnumerator routine){
+
+        public void RemoveFixedUpdateListener(Action action)
+        {
+            controller.fixedUpdateEvent -= action;
+        }
+
+        public void AddLateUpdateListener(Action action)
+        {
+            controller.lateUpdateEvent += action;
+        }
+
+        public void RemoveLateUpdateListener(Action action)
+        {
+            controller.lateUpdateEvent -= action;
+        }
+
+        public Coroutine StartCoroutine(IEnumerator routine)
+        {
             return controller.StartCoroutine(routine);
         }
 
-        public Coroutine StartCoroutine(string methodName, [DefaultValue("null")] object value){
-            return controller.StartCoroutine(methodName,value);
-        }
-
-        public void StopAllCoroutines(){
+        public void StopAllCoroutines()
+        {
             controller.StopAllCoroutines();
         }
 
-        public void StopCoroutine(IEnumerator routine){
-            controller.StopCoroutine(routine);
-        } 
-        public void StopCoroutine(Coroutine routine){
+        public void StopCoroutine(IEnumerator routine)
+        {
             controller.StopCoroutine(routine);
         }
-        public void StopCoroutine(string methodName){
-            controller.StopCoroutine(methodName);
+        
+        public void StopCoroutine(Coroutine routine)
+        {
+            controller.StopCoroutine(routine);
         }
     }
 }
