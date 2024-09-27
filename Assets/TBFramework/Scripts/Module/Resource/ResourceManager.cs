@@ -97,9 +97,8 @@ namespace TBFramework.Resource
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <typeparam name="T">资源类型</typeparam>
-        /// <param name="instantiate">是否实例化</param>
         /// <returns></returns>
-        public T Load<T>(string path, bool instantiate = true) where T : UnityEngine.Object
+        public T Load<T>(string path) where T : UnityEngine.Object
         {
             T obj;
             string name = path + "_" + typeof(T).Name;
@@ -166,7 +165,6 @@ namespace TBFramework.Resource
         /// 真的异步加载资源的普通方法
         /// </summary>
         /// <param name="path">资源路径</param>
-        /// <param name="instantiate">是否实例化</param>
         /// <returns></returns>
         private IEnumerator ReallyLoadAsync(string path)
         {
@@ -195,7 +193,6 @@ namespace TBFramework.Resource
         /// <param name="path">资源路径</param>
         /// <param name="type">资源类型</param>
         /// <param name="callBack">回调函数</param>
-        /// <param name="instantiate">是否实例化</param>
         [Obsolete("建议使用泛型方法进行加载资源，因为同一资源使用不同类型加载可能会导致资源加载错误")]
         public void LoadAsync(string path, Type type, Action<UnityEngine.Object> callBack)
         {
@@ -228,7 +225,6 @@ namespace TBFramework.Resource
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="type">资源类型</param>
-        /// <param name="instantiate">是否实例化</param>
         /// <returns></returns>
         private IEnumerator ReallyLoadAsync(string path, Type type)
         {
@@ -256,7 +252,6 @@ namespace TBFramework.Resource
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="callBack">回调函数</param>
-        /// <param name="instantiate">是否实例化</param>
         /// <typeparam name="T">资源类型</typeparam>
         public void LoadAsync<T>(string path, Action<T> callBack) where T : UnityEngine.Object
         {
@@ -288,7 +283,6 @@ namespace TBFramework.Resource
         /// 真的异步加载资源的泛型方法
         /// </summary>
         /// <param name="path">资源路径</param>
-        /// <param name="instantiate">是否实例化</param>
         /// <typeparam name="T">资源类型</typeparam>
         /// <returns></returns>
         private IEnumerator ReallyLoadAsync<T>(string path) where T : UnityEngine.Object
@@ -313,9 +307,12 @@ namespace TBFramework.Resource
         }
 
         /// <summary>
-        /// 卸载资源
+        /// 卸载资源的普通方法
         /// </summary>
-        /// <param name="obj">需要卸载的资源对象</param>
+        /// <param name="path">资源路径</param>
+        /// <param name="callBack">卸载资源的回调函数</param>
+        /// <param name="isDel">引用计数清零，是否马上卸载</param>
+        /// <param name="isSub">执行这个方法，是否引用计数减一</param>
         public void UnloadAsset(string path, Action<UnityEngine.Object> callBack = null, bool isDel = false, bool isSub = true)
         {
             string name = path + "_unknown";
@@ -326,6 +323,14 @@ namespace TBFramework.Resource
             }
         }
 
+        /// <summary>
+        /// 通过type卸载资源的方法
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <param name="type">资源类型</param>
+        /// <param name="callBack">卸载资源的回调函数</param>
+        /// <param name="isDel">引用计数清零，是否马上卸载</param>
+        /// <param name="isSub">执行这个方法，是否引用计数减一</param>
         public void UnloadAsset(string path, Type type, Action<UnityEngine.Object> callBack = null, bool isDel = false, bool isSub = true)
         {
             string name = path + "_" + type.Name;
@@ -336,6 +341,14 @@ namespace TBFramework.Resource
             }
         }
 
+        /// <summary>
+        /// 通过泛型卸载资源的方法
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <param name="callBack">卸载资源的回调函数</param>
+        /// <param name="isDel">引用计数清零，是否马上卸载</param>
+        /// <param name="isSub">执行这个方法，是否引用计数减一</param>
+        /// <typeparam name="T">资源类型</typeparam>
         public void UnloadAsset<T>(string path, Action<T> callBack = null, bool isDel = false, bool isSub = true) where T : UnityEngine.Object
         {
             string name = path + "_" + typeof(T).Name;
@@ -346,6 +359,15 @@ namespace TBFramework.Resource
             }
         }
 
+        /// <summary>
+        /// 卸载方法的相同代码
+        /// </summary>
+        /// <param name="re">资源信息</param>
+        /// <param name="name">获取资源信息的索引名</param>
+        /// <param name="callBack">卸载资源的回调函数</param>
+        /// <param name="isDel">引用计数清零，是否马上卸载</param>
+        /// <param name="isSub">执行这个方法，是否引用计数减一</param>
+        /// <typeparam name="T">资源类型</typeparam>
         private void UnloadAssetInRes<T>(ResEvent<T> re, string name, Action<T> callBack, bool isDel, bool isSub) where T : UnityEngine.Object
         {
             re.isDel = isDel;
@@ -399,7 +421,11 @@ namespace TBFramework.Resource
             action?.Invoke();
         }
 
-
+        /// <summary>
+        /// 获取引用计数的普通方法
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <returns></returns>
         public int GetRefCount(string path)
         {
             string name = path + "_unknown";
@@ -410,6 +436,12 @@ namespace TBFramework.Resource
             return 0;
         }
 
+        /// <summary>
+        /// 通过type获取引用计数的方法
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <param name="type">资源类型</param>
+        /// <returns></returns>
         public int GetRefCount(string path, Type type)
         {
             string name = path + "_" + type.Name;
@@ -420,6 +452,12 @@ namespace TBFramework.Resource
             return 0;
         }
 
+        /// <summary>
+        /// 通过泛型获取引用计数的方法
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <typeparam name="T">资源类型</typeparam>
+        /// <returns></returns>
         public int GetRefCount<T>(string path)
         {
             string name = path + "_" + typeof(T).Name;
@@ -429,11 +467,20 @@ namespace TBFramework.Resource
             }
             return 0;
         }
-    
+
+        /// <summary>
+        /// 清理资源字典
+        /// </summary>
+        /// <param name="action">回调函数</param>
         public void ClearDic(Action action){
             MonoManager.Instance.StartCoroutine(ReallyClearDic(action));
         }
 
+        /// <summary>
+        /// 真正清理资源字典的方法
+        /// </summary>
+        /// <param name="action">回调函数</param>
+        /// <returns></returns>
         private IEnumerator ReallyClearDic(Action action)
         {
             resDic.Clear();
