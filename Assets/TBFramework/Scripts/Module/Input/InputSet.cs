@@ -5,6 +5,6 @@ namespace TBFramework.Input
     {
         public const string NOT_TRIGGER_SUFFIX = "_NotTrigger";
 
-        public const float DEFAULT_DELAY_VALUE = 0.5f;
+        public const float DEFAULT_DELAY_VALUE = 0.05f;
     }
 }

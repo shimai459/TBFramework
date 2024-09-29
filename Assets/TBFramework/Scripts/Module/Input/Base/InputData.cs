@@ -43,12 +43,26 @@ namespace TBFramework.Input
 
         public static bool operator ==(InputData left, InputData right)
         {
-            return left.Equals(right);
+            if (left is InputData && right is InputData)
+            {
+                return left.Compare(right) && right.Compare(left);
+            }
+            else
+            {
+                return left as object == right as object;
+            }
         }
 
         public static bool operator !=(InputData left, InputData right)
         {
-            return !left.Equals(right);
+            if (left is InputData && right is InputData)
+            {
+                return !(left.Compare(right) && right.Compare(left));
+            }
+            else
+            {
+                return left as object != right as object;
+            }
         }
 
         public override bool Equals(object obj)
@@ -56,12 +70,11 @@ namespace TBFramework.Input
             if (obj is InputData && this is InputData)
             {
                 InputData other = obj as InputData;
-                return Compare(other);
+                return Compare(other) && other.Compare(this);
             }
             else
             {
-                Object a = this as Object;
-                return a == obj;
+                return base.Equals(obj);
             }
 
         }

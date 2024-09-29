@@ -5,14 +5,13 @@ namespace TBFramework.Input
 {
     public class MouseData : InputData
     {
-        private MouseSingleData mouse;
-
-        private Func<MouseSingleData, bool> condition;
+        public MouseSingleData mouse;
+        public Func<MouseSingleData, bool> condition;
         public MouseData(string inputEvent, bool canChange, MouseSingleData datas, Func<MouseSingleData, bool> condition) : base(inputEvent, canChange)
         {
             mouse = datas;
             this.condition = condition;
-            this.inputType = E_InputType.Axis;
+            this.inputType = E_InputType.Mouse;
         }
 
         public override void IsTrigger(Action<bool> action)

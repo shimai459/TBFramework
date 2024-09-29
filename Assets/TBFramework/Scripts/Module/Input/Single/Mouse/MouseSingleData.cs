@@ -7,11 +7,9 @@ namespace TBFramework.Input
 {
     public class MouseSingleData
     {
-        private int index;
+        public int index;
 
-        private E_MouseNumType type;
-
-        public E_MouseNumType Type { get => type; }
+        public E_MouseNumType type;
 
         public MouseSingleData(int index, E_MouseNumType type)
         {

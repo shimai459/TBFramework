@@ -6,7 +6,7 @@ namespace TBFramework.Input
 {
     public class GyroData : InputData
     {
-        private Func<Gyroscope, bool> condition;
+        public Func<Gyroscope, bool> condition;
 
         public GyroData(string inputEvent, bool canChange, Func<Gyroscope, bool> condition) : base(inputEvent, canChange)
         {

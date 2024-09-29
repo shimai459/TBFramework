@@ -5,7 +5,7 @@ namespace TBFramework.Input
 {
     public class NullData : InputData
     {
-        private bool canTrigger;
+        public bool canTrigger;
         public NullData(string inputEvent, bool canChange, bool canTrigger = false) : base(inputEvent, canChange)
         {
             this.inputType = E_InputType.Null;

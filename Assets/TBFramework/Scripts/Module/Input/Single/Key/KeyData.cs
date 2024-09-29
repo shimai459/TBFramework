@@ -6,7 +6,7 @@ namespace TBFramework.Input
 {
     public class KeyData : InputData
     {
-        private KeySingleData data;
+        public KeySingleData data;
         public KeyData(string inputEvent, bool canChange, KeySingleData keys) : base(inputEvent, canChange)
         {
             this.data = keys;

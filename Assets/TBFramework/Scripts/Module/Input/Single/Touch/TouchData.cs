@@ -8,7 +8,7 @@ namespace TBFramework.Input
     public class TouchData : InputData
     {
 
-        private Func<Touch[], bool> condition;
+        public Func<Touch[], bool> condition;
 
         public TouchData(string inputEvent, bool canChange, Func<Touch[], bool> condition) : base(inputEvent, canChange)
         {

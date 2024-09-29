@@ -7,7 +7,7 @@ namespace TBFramework.Input
     public class CompassData : InputData
     {
 
-        private Func<Compass, bool> condition;
+        public Func<Compass, bool> condition;
 
         public CompassData(string inputEvent, bool canChange, Func<Compass, bool> condition) : base(inputEvent, canChange)
         {

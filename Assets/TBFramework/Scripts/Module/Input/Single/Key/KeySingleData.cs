@@ -4,9 +4,9 @@ namespace TBFramework.Input
 {
     public class KeySingleData
     {
-        private KeyCode keyCode;
+        public KeyCode keyCode;
 
-        private E_KeyOperationType operationType;
+        public E_KeyOperationType operationType;
 
         public KeySingleData(KeyCode keyCode, E_KeyOperationType operationType)
         {

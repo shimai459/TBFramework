@@ -7,7 +7,7 @@ namespace TBFramework.Input
 {
     public class AccelerationData : InputData
     {
-        private Func<AccelerationEvent[], bool> condition;
+        public Func<AccelerationEvent[], bool> condition;
 
         public AccelerationData(string inputEvent, bool canChange, Func<AccelerationEvent[], bool> condition) : base(inputEvent, canChange)
         {

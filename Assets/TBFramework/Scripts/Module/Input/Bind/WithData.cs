@@ -10,7 +10,7 @@ namespace TBFramework.Input
 {
     public class WithData : BindBaseData
     {
-        private float delay;
+        public float delay;
 
         private List<InputData> triggers;
 

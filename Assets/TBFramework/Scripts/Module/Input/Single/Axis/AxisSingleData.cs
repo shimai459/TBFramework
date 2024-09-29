@@ -4,11 +4,9 @@ namespace TBFramework.Input
 {
     public class AxisSingleData
     {
-        private string axisName;
+        public string axisName;
 
-        private E_AxisNumType axisNumType;
-
-        public E_AxisNumType AxisNumType { get => axisNumType; }
+        public E_AxisNumType axisNumType;
 
         public AxisSingleData(string axisName, E_AxisNumType axisNumType = E_AxisNumType.Float)
         {

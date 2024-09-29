@@ -64,7 +64,7 @@ namespace TBFramework.Input
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        private bool CanTrigger(E_InputType type)
+        public bool CanTrigger(E_InputType type)
         {
             if (switchList.ContainsKey(type))
             {
@@ -78,6 +78,12 @@ namespace TBFramework.Input
         #region 输入映射
 
         private Dictionary<string, InputData> inputs = new Dictionary<string, InputData>();//所有的输入映射
+
+        /// <summary>
+        /// 获取所有的输入映射
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, InputData> GetInputs() { return inputs; }
 
         /// <summary>
         /// 添加输入映射
@@ -210,14 +216,34 @@ namespace TBFramework.Input
         }
 
         /// <summary>
-        /// 检测当前的键位输入
+        /// 通过按键检测修改输入映射
         /// </summary>
-        /// <param name="action">处理键位输入的事件</param>
-        public void CheckTriggerKeyCode(Action<List<KeyCode>> action)
+        /// <param name="oldInput"></param>
+        public void ChangeInputWithCheck(InputData oldInput)
         {
-            MonoManager.Instance.StartCoroutine(ReallyCheckTriggerKeyCode(action));
+            ChangeInputWithCheck(oldInput, KeyCodesToInputData);
         }
 
+        /// <summary>
+        /// 通过按键检测修改输入映射(自定义按键列表转换输入映射)
+        /// </summary>
+        /// <param name="oldInput"></param>
+        /// <param name="action"></param>
+        public void ChangeInputWithCheck(InputData oldInput, Func<string, List<KeyCode>, InputData> action)
+        {
+            MonoManager.Instance.StartCoroutine(ReallyCheckTriggerKeyCode((list) =>
+            {
+                if (action != null)
+                {
+                    ChangeInput(oldInput, action.Invoke(oldInput.inputEvent, list));
+                }
+                else
+                {
+                    ChangeInput(oldInput, KeyCodesToInputData(oldInput.inputEvent, list));
+                }
+
+            }));
+        }
 
         /// <summary>
         /// 真正检测当前的键位输入
@@ -259,7 +285,7 @@ namespace TBFramework.Input
         /// <param name="inputEvent">输入映射事件名</param>
         /// <param name="list">键位输入</param>
         /// <returns></returns>
-        public InputData KeyCodesToInputData(string inputEvent, List<KeyCode> list)
+        private InputData KeyCodesToInputData(string inputEvent, List<KeyCode> list)
         {
             if (list.Count == 1)
             {

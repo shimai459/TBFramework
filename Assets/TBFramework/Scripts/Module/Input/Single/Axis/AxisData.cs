@@ -7,9 +7,8 @@ namespace TBFramework.Input
 {
     public class AxisData : InputData
     {
-        private AxisSingleData axis;
-
-        private Func<AxisSingleData, bool> condition;
+        public AxisSingleData axis;
+        public Func<AxisSingleData, bool> condition;
         public AxisData(string inputEvent, bool canChange, AxisSingleData datas, Func<AxisSingleData, bool> condition) : base(inputEvent, canChange)
         {
             axis = datas;

@@ -6,7 +6,7 @@ namespace TBFramework.Input
 {
     public class OrData : BindBaseData
     {
-        private bool isRepeated;
+        public bool isRepeated;
 
         private int untriggerCount = 0;
 

@@ -5,7 +5,7 @@ namespace TBFramework.Input
 {
     public abstract class BindBaseData : InputData
     {
-        protected List<InputData> datas;
+        public List<InputData> datas;
 
         public BindBaseData(string inputEvent, bool canChange, params InputData[] datas) : base(inputEvent, canChange)
         {
