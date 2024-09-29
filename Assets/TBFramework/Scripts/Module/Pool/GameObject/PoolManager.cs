@@ -105,13 +105,13 @@ namespace TBFramework.Pool
         /// <summary>
         /// 设置对象池最大容量
         /// </summary>
-        /// <param name="pathName"></param>
+        /// <param name="poolName"></param>
         /// <param name="max"></param>
-        public void SetPoolMaxNumber(string pathName, int max)
+        public void SetPoolMaxNumber(string poolName, int max)
         {
-            if (poolDict.ContainsKey(pathName))
+            if (poolDict.ContainsKey(poolName))
             {
-                poolDict[pathName].SetMaxNumber(max);
+                poolDict[poolName].SetMaxNumber(max);
             }
         }
 
@@ -127,11 +127,11 @@ namespace TBFramework.Pool
             }
         }
 
-        public void SetPoolMaxType(string pathName, E_PoolMaxType maxType)
+        public void SetPoolMaxType(string poolName, E_PoolMaxType maxType)
         {
-            if (poolDict.ContainsKey(pathName))
+            if (poolDict.ContainsKey(poolName))
             {
-                poolDict[pathName].SetMaxType(maxType);
+                poolDict[poolName].SetMaxType(maxType);
             }
         }
 
