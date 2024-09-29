@@ -5,13 +5,13 @@ using TBFramework.Mono;
 
 namespace TBFramework.Pool
 {
-    public class CPoolManager : Singleton<CPoolManager>
+    public class MonoCPoolManager : Singleton<MonoCPoolManager>
     {
         private Dictionary<Type, I_PoolData> monoCDict = new Dictionary<Type, I_PoolData>();
 
         private GameObject cPoolObj;//所有缓存池的根节点
 
-        public CPoolManager()
+        public MonoCPoolManager()
         {
             MonoManager.Instance.AddUpdateListener(CheckAndRemove);
         }
@@ -22,20 +22,20 @@ namespace TBFramework.Pool
         /// <returns></returns>
         public T Pop<T>(E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER) where T : Behaviour
         {
-            
+
             if (cPoolObj == null)
             {
                 cPoolObj = new GameObject("C" + PoolSet.POOL_OBJECT_NAME);
             }
             if (monoCDict.ContainsKey(typeof(T)))
             {
-                if ((monoCDict[typeof(T)] as CPoolData<T>).CanPop)
+                if ((monoCDict[typeof(T)] as MonoCPoolData<T>).CanPop)
                 {
-                    return (monoCDict[typeof(T)] as CPoolData<T>).Pop();
+                    return (monoCDict[typeof(T)] as MonoCPoolData<T>).Pop();
                 }
                 else
                 {
-                    CPoolData<T> cPool = monoCDict[typeof(T)] as CPoolData<T>;
+                    MonoCPoolData<T> cPool = monoCDict[typeof(T)] as MonoCPoolData<T>;
                     T monoC = cPool.FatherObj.AddComponent<T>();
                     cPool.AddUse(monoC);
                     monoC.enabled = true;
@@ -44,8 +44,8 @@ namespace TBFramework.Pool
             }
             else
             {
-                monoCDict.Add(typeof(T), new CPoolData<T>(cPoolObj, maxType, max));
-                CPoolData<T> cPool = monoCDict[typeof(T)] as CPoolData<T>;
+                monoCDict.Add(typeof(T), new MonoCPoolData<T>(cPoolObj, maxType, max));
+                MonoCPoolData<T> cPool = monoCDict[typeof(T)] as MonoCPoolData<T>;
                 T monoC = cPool.FatherObj.AddComponent<T>();
                 cPool.AddUse(monoC);
                 monoC.enabled = true;
@@ -66,9 +66,9 @@ namespace TBFramework.Pool
             }
             if (!monoCDict.ContainsKey(typeof(T)))
             {
-                monoCDict.Add(typeof(T), new CPoolData<T>(cPoolObj, maxType, max));
+                monoCDict.Add(typeof(T), new MonoCPoolData<T>(cPoolObj, maxType, max));
             }
-            (monoCDict[typeof(T)] as CPoolData<T>).Push(monoC);
+            (monoCDict[typeof(T)] as MonoCPoolData<T>).Push(monoC);
         }
 
         public void Clear()

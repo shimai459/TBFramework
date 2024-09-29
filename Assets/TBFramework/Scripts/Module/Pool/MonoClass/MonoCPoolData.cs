@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace TBFramework.Pool
 {
-    public class CPoolData<T> : I_PoolData where T : Behaviour
+    public class MonoCPoolData<T> : I_PoolData where T : Behaviour
     {
         private Stack<T> poolStack;
 
@@ -17,7 +17,7 @@ namespace TBFramework.Pool
             }
         }
 
-        public CPoolData(GameObject cPoolObj, E_PoolMaxType maxType, int max)
+        public MonoCPoolData(GameObject cPoolObj, E_PoolMaxType maxType, int max)
         {
             fatherObj = new GameObject(typeof(T).Name + " " + PoolSet.POOL_SINGLE_PARENT_EXTENSION);
             fatherObj.transform.SetParent(cPoolObj.transform);
