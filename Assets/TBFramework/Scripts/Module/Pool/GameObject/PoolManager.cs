@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using TBFramework.Resource;
+using UnityEditor;
 
 namespace TBFramework.Pool
 {
@@ -12,36 +13,59 @@ namespace TBFramework.Pool
     {
         private Dictionary<string, PoolData> poolDict = new Dictionary<string, PoolData>();//使用字典用键值对方式去存缓存池,键是缓存池中对象的加载地址
 
+        private Dictionary<string, Action<string, Action<GameObject>>> createDic = new Dictionary<string, Action<string, Action<GameObject>>>();
+
         private GameObject poolObj;//所有缓存池的根节点
 
         /// <summary>
         /// 提供给外部,从缓存池取游戏对象的方法
         /// </summary>
-        /// <param name="pathName">游戏对象加载路径,也作为游戏对象名和该游戏对象的缓存池名</param>
+        /// <param name="poolName">游戏对象名和该游戏对象的缓存池名</param>
         /// <param name="callBack">获取到游戏对象后要对游戏对象进行的操作</param>
         /// <param name="fatherObj">获取游戏对象的父物体,默认为null</param>
-        public void Pop(string pathName, Action<GameObject> callBack, Transform fatherObj = null, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
+        public void Pop(string poolName, Action<GameObject> callBack, Transform fatherObj = null, Action<string, Action<GameObject>> createNewObj = null, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
         {
             if (poolObj == null && PoolSet.POOL_FINISH_OPEN)
             {
                 poolObj = new GameObject(PoolSet.POOL_OBJECT_NAME);
             }
             //如果缓存池容器中存在该对象的缓存池并且缓存池中还有对象,则从缓存池中取
-            if (poolDict.ContainsKey(pathName) && poolDict[pathName].CanPop)
+            if (poolDict.ContainsKey(poolName) && poolDict[poolName].CanPop)
             {
-                callBack(poolDict[pathName].Pop(fatherObj));
+                callBack(poolDict[poolName].Pop(fatherObj));
             }
             else//如果没有则生成一个对象
             {
-                ResourceManager.Instance.LoadAsync<GameObject>(pathName, (o) =>
+                Action<string, Action<GameObject>> createNew = createNewObj;
+                if (!createDic.ContainsKey(poolName))
                 {
-                    GameObject obj =GameObject.Instantiate(o);
-                    obj.name = pathName;
-                    if (!poolDict.ContainsKey(pathName))
+                    if (createNewObj == null)
                     {
-                        poolDict.Add(pathName, new PoolData(obj as GameObject, poolObj, true, maxType, max));
-                    }else{
-                        poolDict[pathName].AddUse(obj as GameObject);
+                        createNew = DefaultCreate;
+                    }
+                    createDic.Add(poolName, createNew);
+                }
+                else
+                {
+                    createNew = createDic[poolName];
+                }
+                createNew(poolName, (o) =>
+                {
+                    GameObject obj = o;
+                    //判断是否是预制体，是就实例化
+                    if (PrefabUtility.GetPrefabInstanceStatus(o) != PrefabInstanceStatus.NotAPrefab || PrefabUtility.GetPrefabAssetType(o) != PrefabAssetType.NotAPrefab)
+                    {
+                        obj = GameObject.Instantiate(o);
+                    }
+                    obj.name = poolName;
+                    obj.transform.SetParent(fatherObj);
+                    if (!poolDict.ContainsKey(poolName))
+                    {
+                        poolDict.Add(poolName, new PoolData(obj as GameObject, poolObj, true, maxType, max));
+                    }
+                    else
+                    {
+                        poolDict[poolName].AddUse(obj as GameObject);
                     }
                     callBack(obj as GameObject);
                 });
@@ -50,9 +74,9 @@ namespace TBFramework.Pool
         /// <summary>
         /// 提供给外部调用,将不用的游戏对象重新压入缓存池
         /// </summary>
-        /// <param name="pathName">游戏对象加载路径,也作为游戏对象名和该游戏对象的缓存池名</param>
+        /// <param name="poolName">游戏对象名和该游戏对象的缓存池名</param>
         /// <param name="obj">要压入缓存池的游戏对象</param>
-        public void Push(string pathName, GameObject obj, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
+        public void Push(string poolName, GameObject obj, Action<string, Action<GameObject>> createNewObj = null, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
         {
             //在第一次压入游戏对象的时候,创建缓存池根节点
             if (poolObj == null && PoolSet.POOL_FINISH_OPEN)
@@ -60,13 +84,20 @@ namespace TBFramework.Pool
                 poolObj = new GameObject(PoolSet.POOL_OBJECT_NAME);
             }
             //如果有该游戏对象的缓存池,就直接压入,否则添加一个该游戏对象的缓存池
-            if (poolDict.ContainsKey(pathName))
+            if (poolDict.ContainsKey(poolName))
             {
-                poolDict[pathName].Push(obj);
+                poolDict[poolName].Push(obj);
             }
             else
             {
-                poolDict.Add(pathName, new PoolData(obj, poolObj, false, maxType, max));
+                poolDict.Add(poolName, new PoolData(obj, poolObj, false, maxType, max));
+                if (!createDic.ContainsKey(poolName))
+                {
+                    if (createNewObj != null)
+                    {
+                        createDic.Add(poolName, createNewObj);
+                    }
+                }
             }
 
         }
@@ -104,6 +135,22 @@ namespace TBFramework.Pool
             }
         }
 
+        public void SetPoolCreatNew(string poolName, Action<string, Action<GameObject>> action)
+        {
+            if (action != null)
+            {
+                if (createDic.ContainsKey(poolName))
+                {
+                    createDic[poolName] = action;
+                }
+                else
+                {
+                    createDic.Add(poolName, action);
+                }
+            }
+
+        }
+
         /// <summary>
         /// 提供给外部调用,清除缓存池的方法
         /// 一般用于场景切换时
@@ -112,6 +159,11 @@ namespace TBFramework.Pool
         {
             poolDict.Clear();
             poolObj = null;
+        }
+
+        private void DefaultCreate(string poolName, Action<GameObject> action)
+        {
+            ResourceManager.Instance.LoadAsync<GameObject>(poolName, action);
         }
     }
 }
