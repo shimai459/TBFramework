@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace TBFramework.Lua
 {
-    public class LuaAddSuffixesInBatch : Editor
+    public class LuaAddSuffixesInBatch : UnityEditor.Editor
     {
         [MenuItem("Automation/Lua/LuaAddSuffixesInBatch")]
         public static void CopyLuaToTxt(){
