@@ -46,22 +46,22 @@ namespace TBFramework.Mono
 
         public Coroutine StartCoroutine(IEnumerator routine)
         {
-            return controller.StartCoroutine(routine);
+            return controller?.StartCoroutine(routine);
         }
 
         public void StopAllCoroutines()
         {
-            controller.StopAllCoroutines();
+            controller?.StopAllCoroutines();
         }
 
         public void StopCoroutine(IEnumerator routine)
         {
-            controller.StopCoroutine(routine);
+            controller?.StopCoroutine(routine);
         }
-        
+
         public void StopCoroutine(Coroutine routine)
         {
-            controller.StopCoroutine(routine);
+            controller?.StopCoroutine(routine);
         }
     }
 }
