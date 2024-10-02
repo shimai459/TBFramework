@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using TBFramework.Pool;
+using TBFramework.Util;
 
 namespace TBFramework.Timer
 {
@@ -15,7 +16,7 @@ namespace TBFramework.Timer
         public BaseTimer<T> CreateTimer<T>(E_TimerType type, int intervalTime, Action<T> action, T param)
         {
             BaseTimer<T> timer = null;
-            int key = GetUnusedKey();
+            int key = UniqueKeyUtil.GetUnusedKey(uniqueKeys);
             switch (type)
             {
                 case E_TimerType.Async:
@@ -74,21 +75,6 @@ namespace TBFramework.Timer
             }
             timers.Clear();
             uniqueKeys.Clear();
-        }
-
-        private int GetUnusedKey()
-        {
-            uniqueKeys.Sort();
-            int key = 1;
-            foreach (int use in uniqueKeys)
-            {
-                if (use != key)
-                {
-                    break;
-                }
-                key++;
-            }
-            return key;
         }
 
         private void PushToPool(I_BaseTimer timer)
