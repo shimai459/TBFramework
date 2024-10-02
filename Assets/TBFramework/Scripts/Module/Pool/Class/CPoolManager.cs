@@ -46,6 +46,7 @@ namespace TBFramework.Pool
         /// <typeparam name="T"></typeparam>
         public void Push<T>(T c, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER) where T : CBase, new()
         {
+            c?.Reset();
             if (!cDict.ContainsKey(typeof(T)))
             {
                 cDict.Add(typeof(T), new CPoolData<T>(maxType, max));
