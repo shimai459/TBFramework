@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace TBFramework.Pool
 {
@@ -39,6 +40,20 @@ namespace TBFramework.Pool
             }
         }
 
+        public Object Pop(Type type, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
+        {
+            object obj = null;
+            MethodInfo methodInfo = typeof(CPoolManager).GetMethod("Pop", 1, new Type[] { typeof(E_PoolMaxType), typeof(int) });
+            Type[] typeArguments = new Type[] { type };
+            if (methodInfo != null && methodInfo.IsGenericMethodDefinition)
+            {
+                MethodInfo genericMethodInfo = methodInfo.MakeGenericMethod(typeArguments);
+                object[] parameters = new object[] { maxType, max };
+                obj = genericMethodInfo.Invoke(Instance, parameters);
+            }
+            return obj;
+        }
+
         /// <summary>
         /// 将脚本压回缓存池
         /// </summary>
@@ -52,6 +67,18 @@ namespace TBFramework.Pool
                 cDict.Add(typeof(T), new CPoolData<T>(maxType, max));
             }
             (cDict[typeof(T)] as CPoolData<T>).Push(c);
+        }
+
+        public void Push(CBase c, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
+        {
+            MethodInfo methodInfo = typeof(CPoolManager).GetMethod("Push", 1, new Type[] { c.GetType(), typeof(E_PoolMaxType), typeof(int) });
+            Type[] typeArguments = new Type[] { c.GetType() };
+            if (methodInfo != null && methodInfo.IsGenericMethodDefinition)
+            {
+                MethodInfo genericMethodInfo = methodInfo.MakeGenericMethod(typeArguments);
+                object[] parameters = new object[] { c, maxType, max };
+                genericMethodInfo.Invoke(Instance, parameters);
+            }
         }
 
         public void Clear()
