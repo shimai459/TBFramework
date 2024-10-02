@@ -57,7 +57,7 @@ namespace TBFramework.Timer
             }
             if (timers.ContainsKey(key))
             {
-                PushToPool(timers[key]);
+                CPoolManager.Instance.Push(timers[key]);
                 timers.Remove(key);
             }
         }
@@ -71,22 +71,10 @@ namespace TBFramework.Timer
         {
             foreach (I_BaseTimer timer in timers.Values)
             {
-                PushToPool(timer);
+                CPoolManager.Instance.Push(timer);
             }
             timers.Clear();
             uniqueKeys.Clear();
-        }
-
-        private void PushToPool(I_BaseTimer timer)
-        {
-            MethodInfo methodInfo = typeof(CPoolManager).GetMethod("Push");
-            Type[] typeArguments = new Type[] { timer.GetType() };
-            if (methodInfo != null && methodInfo.IsGenericMethodDefinition)
-            {
-                MethodInfo genericMethodInfo = methodInfo.MakeGenericMethod(typeArguments);
-                object[] parameters = new object[] { timer, E_PoolMaxType.InPool, PoolSet.POOL_MAX_NUMBER };
-                genericMethodInfo.Invoke(CPoolManager.Instance, parameters);
-            }
         }
     }
 }
