@@ -28,7 +28,7 @@ namespace TBFramework.Timer
             get => type;
         }
 
-        protected int intervalTime; //间隔时间
+        protected int intervalTime; //间隔时间:(ms)
 
         protected bool _isRunning;
 

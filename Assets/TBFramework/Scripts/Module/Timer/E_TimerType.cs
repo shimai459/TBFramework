@@ -4,6 +4,7 @@ namespace TBFramework.Timer
     {
         Async,
         Coroutine,
+        CoroutineRealTime,
         Task,
         Thread,
         ThreadPool,
