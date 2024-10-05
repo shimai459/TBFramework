@@ -37,6 +37,12 @@ namespace TBFramework.Timer
                 case E_TimerType.CoroutineRealTime:
                     timer = CPoolManager.Instance.Pop<TimerWithCoroutineRealTime<T>>();
                     break;
+                case E_TimerType.CoroutineNotCycle:
+                    timer = CPoolManager.Instance.Pop<TimerWithCoroutineNotCycle<T>>();
+                    break;
+                case E_TimerType.CoroutineRealTimeNotCycle:
+                    timer = CPoolManager.Instance.Pop<TimerWithCoroutineRealTimeNotCycle<T>>();
+                    break;
             }
             timer.SetValue(key, intervalTime);
             timer.SetAction(action);
