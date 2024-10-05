@@ -22,8 +22,11 @@ namespace TBFramework.Timer
 
         public override void Start()
         {
-            base.Start();
-            coroutine = MonoManager.Instance.StartCoroutine(StartTimer());
+            if (!_isRunning)
+            {
+                base.Start();
+                coroutine = MonoConManager.Instance.StartCoroutine(StartTimer());
+            }
         }
 
         private IEnumerator StartTimer()
@@ -40,7 +43,8 @@ namespace TBFramework.Timer
             base.Stop();
             if (coroutine != null)
             {
-                MonoManager.Instance.StopCoroutine(coroutine);
+                MonoConManager.Instance.StopCoroutine(coroutine);
+                coroutine = null;
             }
         }
 

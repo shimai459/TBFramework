@@ -21,10 +21,13 @@ namespace TBFramework.Timer
 
         public override void Start()
         {
-            base.Start();
-            thread = new Thread(StartTimer);
-            thread.IsBackground = true;
-            thread.Start();
+            if (!_isRunning)
+            {
+                base.Start();
+                thread = new Thread(StartTimer);
+                thread.IsBackground = true;
+                thread.Start();
+            }
         }
 
         private void StartTimer()
@@ -42,6 +45,7 @@ namespace TBFramework.Timer
             try
             {
                 thread.Abort();
+                thread = null;
             }
             catch (Exception ex)
             {

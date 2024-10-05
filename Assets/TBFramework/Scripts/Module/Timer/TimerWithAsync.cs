@@ -16,8 +16,12 @@ namespace TBFramework.Timer
 
         public override void Start()
         {
-            base.Start();
-            StartTimer();
+            if (!_isRunning)
+            {
+                base.Start();
+                StartTimer();
+            }
+
         }
 
         private async void StartTimer()

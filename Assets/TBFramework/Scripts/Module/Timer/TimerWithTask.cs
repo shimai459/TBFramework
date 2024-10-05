@@ -20,8 +20,11 @@ namespace TBFramework.Timer
 
         public override void Start()
         {
-            base.Start();
-            task = Task.Run(StartTimer);
+            if (!_isRunning)
+            {
+                base.Start();
+                task = Task.Run(StartTimer);
+            }
         }
 
         private void StartTimer()

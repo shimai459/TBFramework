@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using TBFramework.Mono;
@@ -6,18 +5,18 @@ using UnityEngine;
 
 namespace TBFramework.Timer
 {
-    public class TimerWithCoroutineRealTime<T> : BaseTimer<T>
+    public class TimerWithCoroutineNotCycle<T> : BaseTimer<T>
     {
         private Coroutine coroutine;
 
-        public TimerWithCoroutineRealTime()
+        public TimerWithCoroutineNotCycle()
         {
-            type = E_TimerType.CoroutineRealTime;
+            type = E_TimerType.CoroutineNotCycle;
         }
 
-        public TimerWithCoroutineRealTime(int uniqueKey, int intervalTime, Action<T> action, T param) : base(uniqueKey, intervalTime, action, param)
+        public TimerWithCoroutineNotCycle(int uniqueKey, int intervalTime, Action<T> action, T param) : base(uniqueKey, intervalTime, action, param)
         {
-            type = E_TimerType.CoroutineRealTime;
+            type = E_TimerType.CoroutineNotCycle;
         }
 
         public override void Start()
@@ -31,10 +30,11 @@ namespace TBFramework.Timer
 
         private IEnumerator StartTimer()
         {
-            while (_isRunning)
+            if (_isRunning)
             {
-                yield return new WaitForSecondsRealtime(intervalTime / 1000f);
+                yield return new WaitForSeconds(intervalTime / 1000f);
                 action?.Invoke(param);
+                coroutine = MonoConManager.Instance.StartCoroutine(StartTimer());
             }
         }
 

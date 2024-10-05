@@ -18,8 +18,11 @@ namespace TBFramework.Timer
 
         public override void Start()
         {
-            base.Start();
-            ThreadPool.QueueUserWorkItem(StartTimer);
+            if (!_isRunning)
+            {
+                base.Start();
+                ThreadPool.QueueUserWorkItem(StartTimer);
+            }
         }
 
         private void StartTimer(object o)

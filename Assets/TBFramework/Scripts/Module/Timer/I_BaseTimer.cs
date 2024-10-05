@@ -30,7 +30,7 @@ namespace TBFramework.Timer
 
         protected int intervalTime; //间隔时间:(ms)
 
-        protected bool _isRunning;
+        protected bool _isRunning = false;
 
         public I_BaseTimer() { }
 
