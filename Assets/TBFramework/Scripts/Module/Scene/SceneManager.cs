@@ -54,7 +54,7 @@ namespace TBFramework.Scene
 
         public void LoadSceneAsync(string sceneName, Action action = null, Action<AsyncOperation> loading = null, LoadSceneMode loadSceneMode = LoadSceneMode.Single)
         {
-            MonoManager.Instance.StartCoroutine(ReallyLoadSceneAsync(sceneName, action, loading, loadSceneMode));
+            MonoConManager.Instance.StartCoroutine(ReallyLoadSceneAsync(sceneName, action, loading, loadSceneMode));
         }
 
         private IEnumerator ReallyLoadSceneAsync(string sceneName, Action action, Action<AsyncOperation> loading, LoadSceneMode loadSceneMode)
@@ -70,7 +70,7 @@ namespace TBFramework.Scene
 
         public void LoadSceneAsync(int sceneIndex, Action action = null, Action<AsyncOperation> loading = null, LoadSceneMode loadSceneMode = LoadSceneMode.Single)
         {
-            MonoManager.Instance.StartCoroutine(ReallyLoadSceneAsync(sceneIndex, action, loading, loadSceneMode));
+            MonoConManager.Instance.StartCoroutine(ReallyLoadSceneAsync(sceneIndex, action, loading, loadSceneMode));
         }
 
         private IEnumerator ReallyLoadSceneAsync(int sceneIndex, Action action, Action<AsyncOperation> loading, LoadSceneMode loadSceneMode)

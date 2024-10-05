@@ -13,8 +13,8 @@ namespace TBFramework.Audio
         //创建AudioManager之后,就自动检测不播放的音效播放器,将其放入播放器缓存池中
         public AudioManager()
         {
-            MonoManager.Instance.AddUpdateListener(CheckStopSound);
-            MonoManager.Instance.AddUpdateListener(CheckStopSound3D);
+            MonoConManager.Instance.AddUpdateListener(CheckStopSound);
+            MonoConManager.Instance.AddUpdateListener(CheckStopSound3D);
             PoolManager.Instance.SetPoolCreatNew("Sound3D", CreateSound3D);
         }
 

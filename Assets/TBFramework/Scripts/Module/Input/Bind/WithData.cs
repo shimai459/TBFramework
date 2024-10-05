@@ -41,7 +41,7 @@ namespace TBFramework.Input
             if (timer == 0)
             {
                 triggerAction = action;
-                MonoManager.Instance.StartCoroutine(ReallyIsTrigger());
+                MonoConManager.Instance.StartCoroutine(ReallyIsTrigger());
             }
             else
             {

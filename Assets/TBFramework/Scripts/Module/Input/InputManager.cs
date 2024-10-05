@@ -13,7 +13,7 @@ namespace TBFramework.Input
         #region 检测
         public InputManager()
         {
-            MonoManager.Instance.AddUpdateListener(MyUpdate);
+            MonoConManager.Instance.AddUpdateListener(MyUpdate);
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace TBFramework.Input
         /// <param name="action"></param>
         public void ChangeInputWithCheck(InputData oldInput, Func<string, List<KeyCode>, InputData> action)
         {
-            MonoManager.Instance.StartCoroutine(ReallyCheckTriggerKeyCode((list) =>
+            MonoConManager.Instance.StartCoroutine(ReallyCheckTriggerKeyCode((list) =>
             {
                 if (action != null)
                 {

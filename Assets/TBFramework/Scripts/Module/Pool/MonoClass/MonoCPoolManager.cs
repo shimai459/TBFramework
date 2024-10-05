@@ -14,7 +14,7 @@ namespace TBFramework.Pool
 
         public MonoCPoolManager()
         {
-            MonoManager.Instance.AddUpdateListener(CheckAndRemove);
+            MonoConManager.Instance.AddUpdateListener(CheckAndRemove);
         }
         /// <summary>
         /// 从缓存池取出脚本

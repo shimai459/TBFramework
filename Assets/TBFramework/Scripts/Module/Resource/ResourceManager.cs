@@ -37,7 +37,7 @@ namespace TBFramework.Resource
                     //正在异步加载中，直接同步加载，并且将异步的协程停止
                     obj = Resources.Load(path);
                     re.Invoke(obj);
-                    MonoManager.Instance.StopCoroutine(re.coroutine);
+                    MonoConManager.Instance.StopCoroutine(re.coroutine);
                     re.SetAsset(obj);
                 }
 
@@ -78,7 +78,7 @@ namespace TBFramework.Resource
                 {
                     obj = Resources.Load(path, type);
                     re.Invoke(obj);
-                    MonoManager.Instance.StopCoroutine(re.coroutine);
+                    MonoConManager.Instance.StopCoroutine(re.coroutine);
                     re.SetAsset(obj);
                 }
             }
@@ -112,7 +112,7 @@ namespace TBFramework.Resource
                 }
                 else
                 {
-                    MonoManager.Instance.StopCoroutine(re.coroutine);
+                    MonoConManager.Instance.StopCoroutine(re.coroutine);
                     obj = Resources.Load<T>(path);
                     re.Invoke(obj);
                     re.SetAsset(obj);
@@ -156,7 +156,7 @@ namespace TBFramework.Resource
                 ResEvent<UnityEngine.Object> re = new ResEvent<UnityEngine.Object>(callBack, name);
                 resDic.Add(name, re);
                 re.AddRef();
-                Coroutine c = MonoManager.Instance.StartCoroutine(ReallyLoadAsync(path));
+                Coroutine c = MonoConManager.Instance.StartCoroutine(ReallyLoadAsync(path));
                 re.coroutine = c;
             }
         }
@@ -215,7 +215,7 @@ namespace TBFramework.Resource
                 ResEvent<UnityEngine.Object> re = new ResEvent<UnityEngine.Object>(callBack, name);
                 resDic.Add(name, re);
                 re.AddRef();
-                Coroutine c = MonoManager.Instance.StartCoroutine(ReallyLoadAsync(path, type));
+                Coroutine c = MonoConManager.Instance.StartCoroutine(ReallyLoadAsync(path, type));
                 re.coroutine = c;
             }
         }
@@ -274,7 +274,7 @@ namespace TBFramework.Resource
                 ResEvent<T> re = new ResEvent<T>(callBack, name);
                 resDic.Add(name, re);
                 re.AddRef();
-                Coroutine c = MonoManager.Instance.StartCoroutine(ReallyLoadAsync<T>(path));
+                Coroutine c = MonoConManager.Instance.StartCoroutine(ReallyLoadAsync<T>(path));
                 re.coroutine = c;
             }
         }
@@ -394,7 +394,7 @@ namespace TBFramework.Resource
         /// <param name="action">回调函数</param>
         public void UnloadUnusedAssets(Action action)
         {
-            MonoManager.Instance.StartCoroutine(ReallyUnloadUnusedAssets(action));
+            MonoConManager.Instance.StartCoroutine(ReallyUnloadUnusedAssets(action));
         }
 
         /// <summary>
@@ -472,8 +472,9 @@ namespace TBFramework.Resource
         /// 清理资源字典
         /// </summary>
         /// <param name="action">回调函数</param>
-        public void ClearDic(Action action){
-            MonoManager.Instance.StartCoroutine(ReallyClearDic(action));
+        public void ClearDic(Action action)
+        {
+            MonoConManager.Instance.StartCoroutine(ReallyClearDic(action));
         }
 
         /// <summary>

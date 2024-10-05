@@ -178,7 +178,7 @@ namespace TBFramework.AssetBundles
         /// <param name="abName">AB包名</param>
         public void LoadABAsync(string abName, System.Action<AssetBundle> callBack = null)
         {
-            MonoManager.Instance.StartCoroutine(ReallyLoadABAsync(abName, callBack));
+            MonoConManager.Instance.StartCoroutine(ReallyLoadABAsync(abName, callBack));
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace TBFramework.AssetBundles
         /// <param name="isABAsync">是否使用异步加载包</param>
         public void LoadResAsync(string abName, string resName, System.Action<Object> callBack, bool isABAsync = true)
         {
-            MonoManager.Instance.StartCoroutine(ReallyLoadResAsync(abName, resName, callBack, isABAsync));
+            MonoConManager.Instance.StartCoroutine(ReallyLoadResAsync(abName, resName, callBack, isABAsync));
         }
 
         /// <summary>
@@ -273,7 +273,7 @@ namespace TBFramework.AssetBundles
         {
             if (isABAsync)
             {
-                yield return MonoManager.Instance.StartCoroutine(ReallyLoadABAsync(abName, null));
+                yield return MonoConManager.Instance.StartCoroutine(ReallyLoadABAsync(abName, null));
             }
             else
             {
@@ -298,7 +298,7 @@ namespace TBFramework.AssetBundles
         /// <param name="isABAsync">是否使用异步加载包</param>
         public void LoadResAsync(string abName, string resName, System.Type type, System.Action<Object> callBack, bool isABAsync = true)
         {
-            MonoManager.Instance.StartCoroutine(ReallyLoadResAsync(abName, resName, type, callBack, isABAsync));
+            MonoConManager.Instance.StartCoroutine(ReallyLoadResAsync(abName, resName, type, callBack, isABAsync));
         }
 
         /// <summary>
@@ -314,7 +314,7 @@ namespace TBFramework.AssetBundles
         {
             if (isABAsync)
             {
-                yield return MonoManager.Instance.StartCoroutine(ReallyLoadABAsync(abName, null));
+                yield return MonoConManager.Instance.StartCoroutine(ReallyLoadABAsync(abName, null));
             }
             else
             {
@@ -339,7 +339,7 @@ namespace TBFramework.AssetBundles
         /// <typeparam name="T">资源类型</typeparam>
         public void LoadResAsync<T>(string abName, string resName, System.Action<T> callBack, bool isABAsync = true) where T : Object
         {
-            MonoManager.Instance.StartCoroutine(ReallyLoadResAsync<T>(abName, resName, callBack, isABAsync));
+            MonoConManager.Instance.StartCoroutine(ReallyLoadResAsync<T>(abName, resName, callBack, isABAsync));
         }
 
         /// <summary>
@@ -355,7 +355,7 @@ namespace TBFramework.AssetBundles
         {
             if (isABAsync)
             {
-                yield return MonoManager.Instance.StartCoroutine(ReallyLoadABAsync(abName, null));
+                yield return MonoConManager.Instance.StartCoroutine(ReallyLoadABAsync(abName, null));
             }
             else
             {
@@ -392,7 +392,7 @@ namespace TBFramework.AssetBundles
         /// <param name="callBack">回调函数</param>
         public void UnloadABAsync(string abName, bool unloadRes, System.Action callBack = null)
         {
-            MonoManager.Instance.StartCoroutine(ReallyUnloadABAsync(abName, unloadRes, callBack));
+            MonoConManager.Instance.StartCoroutine(ReallyUnloadABAsync(abName, unloadRes, callBack));
         }
 
         /// <summary>
@@ -442,7 +442,7 @@ namespace TBFramework.AssetBundles
         /// <param name="callBack">回调函数</param>
         public void UnloadAllABAsync(bool unloadRes, System.Action callBack = null)
         {
-            MonoManager.Instance.StartCoroutine(ReallyUnloadAllABAsync(unloadRes, callBack));
+            MonoConManager.Instance.StartCoroutine(ReallyUnloadAllABAsync(unloadRes, callBack));
         }
 
         /// <summary>

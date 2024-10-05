@@ -10,16 +10,18 @@ namespace TBFramework.AI.FSM
 {
     public class FSMLogic
     {
-        public Dictionary<string,FSMState> stateDic=new Dictionary<string, FSMState>();
+        public Dictionary<string, FSMState> stateDic = new Dictionary<string, FSMState>();
         public FSMState nowState;
 
-        public void ChangeState(string name){
-            if(stateDic.ContainsKey(name)){
-                MonoManager.Instance.RemoveUpdateListener(nowState.UpdateState);
+        public void ChangeState(string name)
+        {
+            if (stateDic.ContainsKey(name))
+            {
+                MonoConManager.Instance.RemoveUpdateListener(nowState.UpdateState);
                 nowState.ExitState();
-                nowState=stateDic[name];
+                nowState = stateDic[name];
                 nowState.EnterState();
-                MonoManager.Instance.AddUpdateListener(nowState.UpdateState);
+                MonoConManager.Instance.AddUpdateListener(nowState.UpdateState);
             }
         }
     }
