@@ -75,15 +75,18 @@ namespace TBFramework.Pool
         /// <typeparam name="T"></typeparam>
         public void Push<T>(T monoC, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER) where T : Behaviour
         {
-            if (cPoolObj == null)
+            if (monoC != null)
             {
-                cPoolObj = new GameObject("C" + PoolSet.POOL_OBJECT_NAME);
+                if (cPoolObj == null)
+                {
+                    cPoolObj = new GameObject("C" + PoolSet.POOL_OBJECT_NAME);
+                }
+                if (!monoCDict.ContainsKey(typeof(T)))
+                {
+                    monoCDict.Add(typeof(T), new MonoCPoolData<T>(cPoolObj, maxType, max));
+                }
+                (monoCDict[typeof(T)] as MonoCPoolData<T>).Push(monoC);
             }
-            if (!monoCDict.ContainsKey(typeof(T)))
-            {
-                monoCDict.Add(typeof(T), new MonoCPoolData<T>(cPoolObj, maxType, max));
-            }
-            (monoCDict[typeof(T)] as MonoCPoolData<T>).Push(monoC);
         }
 
         public void Push(Behaviour c, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
@@ -144,6 +147,14 @@ namespace TBFramework.Pool
             foreach (I_PoolData pool in monoCDict.Values)
             {
                 pool.SetMaxNumber(max);
+            }
+        }
+
+        public void SetPoolMaxType<T>(E_PoolMaxType maxType)
+        {
+            if (monoCDict.ContainsKey(typeof(T)))
+            {
+                monoCDict[typeof(T)].SetMaxType(maxType);
             }
         }
     }

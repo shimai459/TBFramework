@@ -70,19 +70,22 @@ namespace TBFramework.Pool
         /// <param name="obj">要压入缓存池的游戏对象</param>
         public void Push(string poolName, GameObject obj, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
         {
-            //在第一次压入游戏对象的时候,创建缓存池根节点
-            if (poolObj == null && PoolSet.POOL_FINISH_OPEN)
+            if (obj != null)
             {
-                poolObj = new GameObject(PoolSet.POOL_OBJECT_NAME);
-            }
-            //如果有该游戏对象的缓存池,就直接压入,否则添加一个该游戏对象的缓存池
-            if (poolDict.ContainsKey(poolName))
-            {
-                poolDict[poolName].Push(obj);
-            }
-            else
-            {
-                poolDict.Add(poolName, new PoolData(obj, poolObj, false, maxType, max));
+                //在第一次压入游戏对象的时候,创建缓存池根节点
+                if (poolObj == null && PoolSet.POOL_FINISH_OPEN)
+                {
+                    poolObj = new GameObject(PoolSet.POOL_OBJECT_NAME);
+                }
+                //如果有该游戏对象的缓存池,就直接压入,否则添加一个该游戏对象的缓存池
+                if (poolDict.ContainsKey(poolName))
+                {
+                    poolDict[poolName].Push(obj);
+                }
+                else
+                {
+                    poolDict.Add(poolName, new PoolData(obj, poolObj, false, maxType, max));
+                }
             }
 
         }

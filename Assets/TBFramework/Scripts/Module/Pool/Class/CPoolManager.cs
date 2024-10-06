@@ -61,12 +61,15 @@ namespace TBFramework.Pool
         /// <typeparam name="T"></typeparam>
         public void Push<T>(T c, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER) where T : CBase, new()
         {
-            c?.Reset();
-            if (!cDict.ContainsKey(typeof(T)))
+            if (c != null)
             {
-                cDict.Add(typeof(T), new CPoolData<T>(maxType, max));
+                c?.Reset();
+                if (!cDict.ContainsKey(typeof(T)))
+                {
+                    cDict.Add(typeof(T), new CPoolData<T>(maxType, max));
+                }
+                (cDict[typeof(T)] as CPoolData<T>).Push(c);
             }
-            (cDict[typeof(T)] as CPoolData<T>).Push(c);
         }
 
         public void Push(CBase c, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
@@ -109,6 +112,14 @@ namespace TBFramework.Pool
             foreach (I_PoolData pool in cDict.Values)
             {
                 pool.SetMaxNumber(max);
+            }
+        }
+
+        public void SetPoolMaxType<T>(E_PoolMaxType maxType)
+        {
+            if (cDict.ContainsKey(typeof(T)))
+            {
+                cDict[typeof(T)].SetMaxType(maxType);
             }
         }
     }
