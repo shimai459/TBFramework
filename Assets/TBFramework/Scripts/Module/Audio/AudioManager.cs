@@ -5,6 +5,7 @@ using System.IO;
 using TBFramework.Pool;
 using TBFramework.Mono;
 using TBFramework.Resource;
+using TBFramework.LoadInfo;
 
 namespace TBFramework.Audio
 {
@@ -15,7 +16,7 @@ namespace TBFramework.Audio
         {
             MonoConManager.Instance.AddUpdateListener(CheckStopSound);
             MonoConManager.Instance.AddUpdateListener(CheckStopSound3D);
-            PoolManager.Instance.SetPoolCreatNew("Sound3D", CreateSound3D);
+            LoadInfoManager.Instance.AddLoadInfo("Sound3D", E_LoadType.Custom, new CustomLoadData<GameObject>(CreateSound3D));
         }
 
         #region 背景音乐
@@ -25,18 +26,6 @@ namespace TBFramework.Audio
         //背景音乐音量
         float musicVolume = 1f;
 
-        /// <summary>
-        /// 播放音乐
-        /// </summary>
-        /// <param name="musicName">音乐名</param>
-        public void PlayMusic(string musicName)
-        {
-            this.PlayMusic((action) =>
-            {
-                ResourceManager.Instance.LoadAsync<AudioClip>(Path.Combine(AudioSet.MUSIC_PATH, musicName), action);
-            });
-        }
-
         public void PlayMusic(AudioClip clip)
         {
             this.PlayMusic((action) =>
@@ -45,11 +34,19 @@ namespace TBFramework.Audio
             });
         }
 
-        public void PlayMusic(string musicName, Action<string, Action<AudioClip>> action)
+        public void PlayMusic(string musicName, Action<string, Action<AudioClip>> action = null)
         {
             PlayMusic((a) =>
             {
-                action?.Invoke(musicName, a);
+                if (action != null)
+                {
+                    action?.Invoke(musicName, a);
+                }
+                else
+                {
+                    LoadInfoManager.Instance.DoLoad<AudioClip>(LoadInfoManager.Instance.GetName(musicName, typeof(AudioClip)), a, true);
+                }
+
             });
         }
 
@@ -152,25 +149,23 @@ namespace TBFramework.Audio
         /// <param name="soundName">音效名</param>
         /// <param name="isLoop">是否重复播放</param>
         /// <param name="callBack">播放音效后的行为</param>
-        public void PlaySound(string soundName, bool isLoop = false, Action<AudioSource> callBack = null)
-        {
-            PlaySound((action) =>
-            {
-                ResourceManager.Instance.LoadAsync<AudioClip>(Path.Combine(AudioSet.SOUND_PATH, soundName), action);
-            }
-            , isLoop, callBack);
-        }
-
         public void PlaySound(AudioClip clip, bool isLoop = false, Action<AudioSource> callBack = null)
         {
             PlaySound((action) => { action?.Invoke(clip); }, isLoop, callBack);
         }
 
-        public void PlaySound(string soundName, Action<string, Action<AudioClip>> action, bool isLoop = false, Action<AudioSource> callBack = null)
+        public void PlaySound(string soundName, bool isLoop = false, Action<AudioSource> callBack = null, Action<string, Action<AudioClip>> action = null)
         {
             PlaySound((a) =>
             {
-                action?.Invoke(soundName, a);
+                if (action != null)
+                {
+                    action?.Invoke(soundName, a);
+                }
+                else
+                {
+                    LoadInfoManager.Instance.DoLoad<AudioClip>(LoadInfoManager.Instance.GetName(soundName, typeof(AudioClip)), a, true);
+                }
             }, isLoop, callBack);
         }
 
@@ -353,25 +348,25 @@ namespace TBFramework.Audio
         //要放回缓存池的音效播放器
         List<AudioSource> disSound3DList = new List<AudioSource>();
 
-        public void PlaySound3D(string soundName, bool isLoop = false, Action<AudioSource> callBack = null)
-        {
-            PlaySound3D((action) =>
-            {
-                ResourceManager.Instance.LoadAsync<AudioClip>(Path.Combine(AudioSet.SOUND_PATH, soundName), action);
-            }
-            , isLoop, callBack);
-        }
 
         public void PlaySound3D(AudioClip clip, bool isLoop = false, Action<AudioSource> callBack = null)
         {
             PlaySound3D((action) => { action?.Invoke(clip); }, isLoop, callBack);
         }
 
-        public void PlaySound3D(string soundName, Action<string, Action<AudioClip>> action, bool isLoop = false, Action<AudioSource> callBack = null)
+        public void PlaySound3D(string soundName, bool isLoop = false, Action<AudioSource> callBack = null, Action<string, Action<AudioClip>> action = null)
         {
             PlaySound3D((a) =>
             {
-                action?.Invoke(soundName, a);
+                if (action != null)
+                {
+                    action?.Invoke(soundName, a);
+                }
+                else
+                {
+                    LoadInfoManager.Instance.DoLoad<AudioClip>(LoadInfoManager.Instance.GetName(soundName, typeof(AudioClip)), a, true);
+                }
+
             }, isLoop, callBack);
         }
 
@@ -545,7 +540,7 @@ namespace TBFramework.Audio
             disSound3DList.Clear();
         }
 
-        private void CreateSound3D(string pool, Action<GameObject> action)
+        private void CreateSound3D(bool isAsync, Action<GameObject> action)
         {
             GameObject o = new GameObject();
             AudioSource s = o.AddComponent<AudioSource>();
