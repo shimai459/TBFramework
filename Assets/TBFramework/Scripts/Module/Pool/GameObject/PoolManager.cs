@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using TBFramework.Resource;
 using UnityEditor;
+using TBFramework.LoadInfo;
+using TBFramework.AssetBundles;
 
 namespace TBFramework.Pool
 {
@@ -12,8 +14,6 @@ namespace TBFramework.Pool
     public class PoolManager : Singleton<PoolManager>
     {
         private Dictionary<string, PoolData> poolDict = new Dictionary<string, PoolData>();//使用字典用键值对方式去存缓存池,键是缓存池中对象的加载地址
-
-        private Dictionary<string, Action<string, Action<GameObject>>> createDic = new Dictionary<string, Action<string, Action<GameObject>>>();
 
         private GameObject poolObj;//所有缓存池的根节点
 
@@ -37,17 +37,9 @@ namespace TBFramework.Pool
             else//如果没有则生成一个对象
             {
                 Action<string, Action<GameObject>> createNew = createNewObj;
-                if (!createDic.ContainsKey(poolName))
+                if (createNew == null)
                 {
-                    if (createNewObj == null)
-                    {
-                        createNew = DefaultCreate;
-                    }
-                    createDic.Add(poolName, createNew);
-                }
-                else
-                {
-                    createNew = createDic[poolName];
+                    createNew = DefaultCreate;
                 }
                 createNew(poolName, (o) =>
                 {
@@ -76,7 +68,7 @@ namespace TBFramework.Pool
         /// </summary>
         /// <param name="poolName">游戏对象名和该游戏对象的缓存池名</param>
         /// <param name="obj">要压入缓存池的游戏对象</param>
-        public void Push(string poolName, GameObject obj, Action<string, Action<GameObject>> createNewObj = null, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
+        public void Push(string poolName, GameObject obj, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
         {
             //在第一次压入游戏对象的时候,创建缓存池根节点
             if (poolObj == null && PoolSet.POOL_FINISH_OPEN)
@@ -91,13 +83,6 @@ namespace TBFramework.Pool
             else
             {
                 poolDict.Add(poolName, new PoolData(obj, poolObj, false, maxType, max));
-                if (!createDic.ContainsKey(poolName))
-                {
-                    if (createNewObj != null)
-                    {
-                        createDic.Add(poolName, createNewObj);
-                    }
-                }
             }
 
         }
@@ -135,22 +120,6 @@ namespace TBFramework.Pool
             }
         }
 
-        public void SetPoolCreatNew(string poolName, Action<string, Action<GameObject>> action)
-        {
-            if (action != null)
-            {
-                if (createDic.ContainsKey(poolName))
-                {
-                    createDic[poolName] = action;
-                }
-                else
-                {
-                    createDic.Add(poolName, action);
-                }
-            }
-
-        }
-
         /// <summary>
         /// 提供给外部调用,清除缓存池的方法
         /// 一般用于场景切换时
@@ -163,7 +132,8 @@ namespace TBFramework.Pool
 
         private void DefaultCreate(string poolName, Action<GameObject> action)
         {
-            ResourceManager.Instance.LoadAsync<GameObject>(poolName, action);
+            string name = LoadInfoManager.Instance.GetName(poolName, typeof(GameObject));
+            LoadInfoManager.Instance.DoLoad<GameObject>(name, action, true);
         }
     }
 }

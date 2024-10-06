@@ -7,11 +7,6 @@ namespace TBFramework.Pool
     {
         #region Pool(缓存池)
         /// <summary>
-        /// 缓存池的预制体保存路径
-        /// </summary>
-        /// <returns></returns>
-        public static string POOL_PREFABS_PATH = Path.Combine("Prefabs", "Pool");
-        /// <summary>
         /// 缓存池根对象的名字
         /// </summary>
         public const string POOL_OBJECT_NAME = "Pool";
