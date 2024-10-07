@@ -50,6 +50,7 @@ namespace TBFramework.UI
             CreateCanvas((action) =>
             {
                 GameObject canvasObj = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+                canvasObj.layer = LayerMask.NameToLayer("UI");
                 Canvas canvas = canvasObj.GetComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceCamera;
 
@@ -126,9 +127,10 @@ namespace TBFramework.UI
             for (int i = 0; i < layers.Length; i++)
             {
                 E_UILayer layer = (E_UILayer)layers.GetValue(i);
-                GameObject obj = new GameObject(layer.ToString());
+                GameObject obj = new GameObject(layer.ToString(), typeof(RectTransform));
                 obj.transform.SetParent(canvas.transform);
                 obj.transform.SetSiblingIndex(i);
+                obj.transform.localPosition = Vector3.zero;
                 this.layers.Add(layer, obj.transform);
             }
         }
@@ -245,6 +247,11 @@ namespace TBFramework.UI
                 {
                     obj = GameObject.Instantiate(o);
                 }
+                //去除Unity自动添加的(Clone)，防止UI事件添加失效
+                if (obj.name.Contains("(Clone)") && obj.name.LastIndexOf("(Clone)") == obj.name.Length - 7)
+                {
+                    obj.name = obj.name.Substring(0, obj.name.Length - 7);
+                }
 
                 //获取面板层级信息,设置层级父物体
                 Transform father = GetLayerFather(layer);
@@ -259,11 +266,11 @@ namespace TBFramework.UI
 
                 //执行面板创建后的行为
                 T panel = obj.GetComponent<T>();
-                if (panel != null)
+                if (panel == null)
                 {
                     panel = obj.AddComponent<T>();
                 }
-                if (isHide)
+                if (!isHide)
                 {
                     panel.OnShow();
                     if (isPause)
@@ -399,7 +406,7 @@ namespace TBFramework.UI
                 BasePanel basePanel = panelDict[panelName].panel;
                 if (basePanel != null)
                 {
-                    if (basePanel.isDestroyInHideSomeTimes && basePanel.isHide && !basePanel.isInQueue && DateTime.Now.Ticks - basePanel.activeTime > this.destoryTime * TimeSpan.TicksPerMillisecond)
+                    if (basePanel.IsDestroyInHideSomeTimes && basePanel.isHide && !basePanel.isInQueue && DateTime.Now.Ticks - basePanel.activeTime > this.destoryTime * TimeSpan.TicksPerMillisecond)
                     {
                         panels.Add(panelName);
                     }

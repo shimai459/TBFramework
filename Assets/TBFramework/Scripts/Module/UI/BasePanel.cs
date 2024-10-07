@@ -9,9 +9,9 @@ namespace TBFramework.UI
 {
     public class BasePanel : MonoBehaviour
     {
-        public bool useTreeName = false;
+        protected virtual bool UseTreeName { get => false; }
 
-        public bool isDestroyInHideSomeTimes = true;
+        public virtual bool IsDestroyInHideSomeTimes { get => true; }
 
         public bool isHide = false;
 
@@ -33,13 +33,13 @@ namespace TBFramework.UI
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
             }
 
-            if (useTreeName)
+            if (!UseTreeName)
             {
                 FindChildrenControl<UIBehaviour>();
             }
             else
             {
-                FindChildrenControlWithTreeName<UIBehaviour>(this.transform, "");
+                FindChildrenControlWithTreeName<UIBehaviour>(this.transform, this.name);
             }
 
         }
@@ -157,15 +157,15 @@ namespace TBFramework.UI
 
         private void FindChildrenControlWithTreeName<T>(Transform transform, string treeName) where T : UIBehaviour
         {
+            T[] controls = transform.GetComponents<T>();
+            foreach (UIBehaviour item in controls)
+            {
+                AddControlAndListener(item, treeName);
+            }
             for (int i = 0; i < transform.childCount; i++)
             {
                 Transform child = transform.GetChild(i);
                 string name = treeName + "/" + child.name;
-                T[] controls = child.GetComponents<T>();
-                foreach (UIBehaviour item in controls)
-                {
-                    AddControlAndListener(item, name);
-                }
                 FindChildrenControlWithTreeName<T>(child, name);
             }
         }
