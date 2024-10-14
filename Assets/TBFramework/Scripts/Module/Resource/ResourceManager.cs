@@ -20,40 +20,10 @@ namespace TBFramework.Resource
         [Obsolete("不建议使用该方法进行资源加载，可能会存在同资源名不同类型资源随机加载的情况")]
         public UnityEngine.Object Load(string path)
         {
-            UnityEngine.Object obj;
             //资源名
             string name = path + "_unknown";
             //判断资源是否已经加载过或正在异步加载
-            if (resDic.ContainsKey(name))
-            {
-                ResEvent<UnityEngine.Object> re = resDic[name] as ResEvent<UnityEngine.Object>;
-                //资源计数+1
-                re.AddRef();
-                if (re.asset != null)//如果资源已经加载过，直接获取
-                {
-                    obj = re.asset;
-                }
-                else
-                {
-                    //正在异步加载中，直接同步加载，并且将异步的协程停止
-                    obj = Resources.Load(path);
-                    re.Invoke(obj);
-                    MonoConManager.Instance.StopCoroutine(re.coroutine);
-                    re.SetAsset(obj);
-                }
-
-            }
-            else
-            {
-                //资源没有加载过，直接同步加载
-                obj = Resources.Load(path);
-                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
-                re.SetName(name);
-                re.SetAsset(obj);
-                resDic.Add(name, re);
-                re.AddRef();
-            }
-            return obj;
+            return Load(name, () => Resources.Load(path));
         }
 
         /// <summary>
@@ -65,36 +35,10 @@ namespace TBFramework.Resource
         [Obsolete("建议使用泛型方法进行加载资源，因为同一资源使用不同类型加载可能会导致资源加载错误")]
         public UnityEngine.Object Load(string path, Type type)
         {
-            UnityEngine.Object obj;
             //资源名
             string name = path + "_" + type.Name;
             //判断资源是否已经加载过或正在异步加载
-            if (resDic.ContainsKey(name))
-            {
-                ResEvent<UnityEngine.Object> re = resDic[name] as ResEvent<UnityEngine.Object>;
-                re.AddRef();
-                if (re.asset != null)
-                {
-                    obj = re.asset;
-                }
-                else
-                {
-                    obj = Resources.Load(path, type);
-                    re.Invoke(obj);
-                    MonoConManager.Instance.StopCoroutine(re.coroutine);
-                    re.SetAsset(obj);
-                }
-            }
-            else
-            {
-                obj = Resources.Load(path, type);
-                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
-                re.SetName(name);
-                re.SetAsset(obj);
-                resDic.Add(name, re);
-                re.AddRef();
-            }
-            return obj;
+            return Load(name, () => Resources.Load(path, type));
         }
 
         /// <summary>
@@ -105,36 +49,52 @@ namespace TBFramework.Resource
         /// <returns></returns>
         public T Load<T>(string path) where T : UnityEngine.Object
         {
-            T obj;
             string name = path + "_" + typeof(T).Name;
+            return Load<T>(name, () => Resources.Load<T>(path));
+        }
+
+        /// <summary>
+        /// 同步加载方法相同的部分
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="func"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        private T Load<T>(string name, Func<T> func) where T : UnityEngine.Object
+        {
+            T obj;
             if (resDic.ContainsKey(name))
             {
-                ResEvent<T> re = resDic[name] as ResEvent<T>;
-                re.AddRef();
-                if (re.asset != null)
+                if (resDic[name] != null)
                 {
-                    obj = re.asset;
+                    ResEvent<T> re_ = resDic[name] as ResEvent<T>;
+                    re_.AddRef();
+                    if (re_.asset != null)
+                    {
+                        obj = re_.asset;
+                    }
+                    else
+                    {
+                        MonoConManager.Instance.StopCoroutine(re_.coroutine);
+                        obj = func?.Invoke();
+                        re_.Invoke(obj);
+                        re_.SetAsset(obj);
+                    }
+                    return obj;
                 }
                 else
                 {
-                    MonoConManager.Instance.StopCoroutine(re.coroutine);
-                    obj = Resources.Load<T>(path);
-                    re.Invoke(obj);
-                    re.SetAsset(obj);
+                    resDic.Remove(name);
                 }
             }
-            else
-            {
-                obj = Resources.Load<T>(path);
-                ResEvent<T> re = CPoolManager.Instance.Pop<ResEvent<T>>();
-                re.SetName(name);
-                re.SetAsset(obj);
-                resDic.Add(name, re);
-                re.AddRef();
-            }
+            obj = func?.Invoke();
+            ResEvent<T> re = CPoolManager.Instance.Pop<ResEvent<T>>();
+            re.SetName(name);
+            re.SetAsset(obj);
+            resDic.Add(name, re);
+            re.AddRef();
             return obj;
         }
-
 
         /// <summary>
         /// 异步加载资源的普通方法
@@ -145,29 +105,7 @@ namespace TBFramework.Resource
         public void LoadAsync(string path, Action<UnityEngine.Object> callBack)
         {
             string name = path + "_unknown";
-            if (resDic.ContainsKey(name))
-            {
-                ResEvent<UnityEngine.Object> re = resDic[name] as ResEvent<UnityEngine.Object>;
-                re.AddRef();
-                if (re.asset != null)
-                {
-                    callBack?.Invoke(re.asset);
-                }
-                else
-                {
-                    re.actions += callBack;
-                }
-            }
-            else
-            {
-                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
-                re.SetName(name);
-                re.actions += callBack;
-                resDic.Add(name, re);
-                re.AddRef();
-                Coroutine c = MonoConManager.Instance.StartCoroutine(ReallyLoadAsync(path));
-                re.coroutine = c;
-            }
+            LoadAsync(name, callBack, () => MonoConManager.Instance.StartCoroutine(ReallyLoadAsync(path)));
         }
 
         /// <summary>
@@ -180,23 +118,7 @@ namespace TBFramework.Resource
             string name = path + "_unknown";
             ResourceRequest rr = Resources.LoadAsync(path);
             yield return rr;
-            if (resDic.ContainsKey(name))
-            {
-                ResEvent<UnityEngine.Object> re = resDic[name] as ResEvent<UnityEngine.Object>;
-                re.Invoke(rr.asset);
-                re.SetAsset(rr.asset);
-                if (re.RefCount <= 0)
-                {
-                    UnloadAsset(path, null, re.isDel, false);
-                }
-            }
-            else
-            {
-                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
-                re.SetName(name);
-                re.SetAsset(rr.asset);
-                resDic.Add(name, re);
-            }
+            AfterLoadResAsync(name, rr.asset);
         }
 
         /// <summary>
@@ -209,29 +131,7 @@ namespace TBFramework.Resource
         public void LoadAsync(string path, Type type, Action<UnityEngine.Object> callBack)
         {
             string name = path + "_" + type.Name;
-            if (resDic.ContainsKey(name))
-            {
-                ResEvent<UnityEngine.Object> re = resDic[name] as ResEvent<UnityEngine.Object>;
-                re.AddRef();
-                if (re.asset != null)
-                {
-                    callBack?.Invoke(re.asset);
-                }
-                else
-                {
-                    re.actions += callBack;
-                }
-            }
-            else
-            {
-                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
-                re.SetName(name);
-                re.actions += callBack;
-                resDic.Add(name, re);
-                re.AddRef();
-                Coroutine c = MonoConManager.Instance.StartCoroutine(ReallyLoadAsync(path, type));
-                re.coroutine = c;
-            }
+            LoadAsync(name, callBack, () => MonoConManager.Instance.StartCoroutine(ReallyLoadAsync(path, type)));
         }
 
         /// <summary>
@@ -245,23 +145,7 @@ namespace TBFramework.Resource
             string name = path + "_" + type.Name;
             ResourceRequest rr = Resources.LoadAsync(path, type);
             yield return rr;
-            if (resDic.ContainsKey(name))
-            {
-                ResEvent<UnityEngine.Object> re = resDic[name] as ResEvent<UnityEngine.Object>;
-                re.Invoke(rr.asset);
-                re.SetAsset(rr.asset);
-                if (re.RefCount <= 0)
-                {
-                    UnloadAsset(path, null, re.isDel, false);
-                }
-            }
-            else
-            {
-                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
-                re.SetName(name);
-                re.SetAsset(rr.asset);
-                resDic.Add(name, re);
-            }
+            AfterLoadResAsync(name, rr.asset);
         }
 
         /// <summary>
@@ -273,29 +157,7 @@ namespace TBFramework.Resource
         public void LoadAsync<T>(string path, Action<T> callBack) where T : UnityEngine.Object
         {
             string name = path + "_" + typeof(T).Name;
-            if (resDic.ContainsKey(name))
-            {
-                ResEvent<T> re = resDic[name] as ResEvent<T>;
-                re.AddRef();
-                if (re.asset != null)
-                {
-                    callBack?.Invoke(re.asset);
-                }
-                else
-                {
-                    re.actions += callBack;
-                }
-            }
-            else
-            {
-                ResEvent<T> re = CPoolManager.Instance.Pop<ResEvent<T>>();
-                re.SetName(name);
-                re.actions += callBack;
-                resDic.Add(name, re);
-                re.AddRef();
-                Coroutine c = MonoConManager.Instance.StartCoroutine(ReallyLoadAsync<T>(path));
-                re.coroutine = c;
-            }
+            LoadAsync<T>(name, callBack, () => MonoConManager.Instance.StartCoroutine(ReallyLoadAsync<T>(path)));
         }
 
         /// <summary>
@@ -309,23 +171,94 @@ namespace TBFramework.Resource
             string name = path + "_" + typeof(T).Name;
             ResourceRequest rr = Resources.LoadAsync<T>(path);
             yield return rr;
+            AfterLoadResAsync<T>(name, rr.asset as T);
+        }
+
+        /// <summary>
+        /// 异步加载方法相同的部分
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="callBack"></param>
+        /// <param name="func"></param>
+        /// <typeparam name="T"></typeparam>
+        private void LoadAsync<T>(string name, System.Action<T> callBack, System.Func<Coroutine> func) where T : UnityEngine.Object
+        {
             if (resDic.ContainsKey(name))
             {
-                ResEvent<T> re = resDic[name] as ResEvent<T>;
-                re.Invoke(rr.asset as T);
-                re.SetAsset(rr.asset as T);
-                if (re.RefCount <= 0)
+                if (resDic[name] != null)
                 {
-                    UnloadAsset(path, null, re.isDel, false);
+                    if (resDic[name] is ResEvent<T>)
+                    {
+                        ResEvent<T> re_ = resDic[name] as ResEvent<T>;
+                        re_.AddRef();
+                        if (re_.asset != null)
+                        {
+                            callBack?.Invoke(re_.asset);
+                        }
+                        else
+                        {
+                            re_.actions += callBack;
+                        }
+                    }
+                    else
+                    {
+                        ResEvent<UnityEngine.Object> re_ = resDic[name] as ResEvent<UnityEngine.Object>;
+                        re_.AddRef();
+                        if (re_.asset != null)
+                        {
+                            callBack?.Invoke(re_.asset as T);
+                        }
+                        else
+                        {
+                            re_.actions += (obj) => callBack?.Invoke(obj as T);
+                        }
+                    }
+                    return;
+                }
+                else
+                {
+                    resDic.Remove(name);
                 }
             }
-            else
+            ResEvent<T> re = CPoolManager.Instance.Pop<ResEvent<T>>();
+            re.SetName(name);
+            re.actions += callBack;
+            resDic.Add(name, re);
+            re.AddRef();
+            Coroutine c = func?.Invoke();
+            re.coroutine = c;
+        }
+
+        /// <summary>
+        /// 异步加载完成后执行的方法
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="asset"></param>
+        /// <typeparam name="T"></typeparam>
+        private void AfterLoadResAsync<T>(string name, T asset) where T : UnityEngine.Object
+        {
+            if (resDic.ContainsKey(name))
             {
-                ResEvent<T> re = CPoolManager.Instance.Pop<ResEvent<T>>();
-                re.SetName(name);
-                re.SetAsset(rr.asset as T);
-                resDic.Add(name, re);
+                if (resDic[name] != null)
+                {
+                    ResEvent<T> re_ = resDic[name] as ResEvent<T>;
+                    re_.Invoke(asset);
+                    re_.SetAsset(asset);
+                    if (re_.RefCount <= 0)
+                    {
+                        UnloadAssetInRes<T>(name, null, re_.isDel, false);
+                    }
+                    return;
+                }
+                else
+                {
+                    resDic.Remove(name);
+                }
             }
+            ResEvent<T> re = CPoolManager.Instance.Pop<ResEvent<T>>();
+            re.SetName(name);
+            re.SetAsset(asset);
+            resDic.Add(name, re);
         }
 
         /// <summary>
@@ -338,11 +271,7 @@ namespace TBFramework.Resource
         public void UnloadAsset(string path, Action<UnityEngine.Object> callBack = null, bool isDel = false, bool isSub = true)
         {
             string name = path + "_unknown";
-            if (resDic.ContainsKey(name))
-            {
-                ResEvent<UnityEngine.Object> re = resDic[name] as ResEvent<UnityEngine.Object>;
-                UnloadAssetInRes(re, name, callBack, isDel, isSub);
-            }
+            UnloadAssetInRes(name, callBack, isDel, isSub);
         }
 
         /// <summary>
@@ -356,11 +285,7 @@ namespace TBFramework.Resource
         public void UnloadAsset(string path, Type type, Action<UnityEngine.Object> callBack = null, bool isDel = false, bool isSub = true)
         {
             string name = path + "_" + type.Name;
-            if (resDic.ContainsKey(name))
-            {
-                ResEvent<UnityEngine.Object> re = resDic[name] as ResEvent<UnityEngine.Object>;
-                UnloadAssetInRes(re, name, callBack, isDel, isSub);
-            }
+            UnloadAssetInRes(name, callBack, isDel, isSub);
         }
 
         /// <summary>
@@ -374,11 +299,7 @@ namespace TBFramework.Resource
         public void UnloadAsset<T>(string path, Action<T> callBack = null, bool isDel = false, bool isSub = true) where T : UnityEngine.Object
         {
             string name = path + "_" + typeof(T).Name;
-            if (resDic.ContainsKey(name))
-            {
-                ResEvent<T> re = resDic[name] as ResEvent<T>;
-                UnloadAssetInRes(re, name, callBack, isDel, isSub);
-            }
+            UnloadAssetInRes(name, callBack, isDel, isSub);
         }
 
         /// <summary>
@@ -390,25 +311,35 @@ namespace TBFramework.Resource
         /// <param name="isDel">引用计数清零，是否马上卸载</param>
         /// <param name="isSub">执行这个方法，是否引用计数减一</param>
         /// <typeparam name="T">资源类型</typeparam>
-        private void UnloadAssetInRes<T>(ResEvent<T> re, string name, Action<T> callBack, bool isDel, bool isSub) where T : UnityEngine.Object
+        private void UnloadAssetInRes<T>(string name, Action<T> callBack, bool isDel, bool isSub) where T : UnityEngine.Object
         {
-            re.isDel = isDel;
-            if (isSub)
+            if (resDic.ContainsKey(name))
             {
-                re.SubRef();
+                if (resDic[name] != null)
+                {
+                    ResEvent<T> re = resDic[name] as ResEvent<T>;
+                    re.isDel = isDel;
+                    if (isSub)
+                    {
+                        re.SubRef();
+                    }
+                    if (re.asset != null && re.RefCount <= 0 && re.isDel)
+                    {
+                        resDic.Remove(name);
+                        Resources.UnloadAsset(re.asset);
+                        re.SetAsset(null);
+                        CPoolManager.Instance.Push(re);
+                    }
+                    else if (re.asset == null && callBack != null)
+                    {
+                        re.actions -= callBack;
+                    }
+                }
+                else
+                {
+                    resDic.Remove(name);
+                }
             }
-            if (re.asset != null && re.RefCount <= 0 && re.isDel)
-            {
-                resDic.Remove(name);
-                Resources.UnloadAsset(re.asset);
-                re.SetAsset(null);
-                CPoolManager.Instance.Push(re);
-            }
-            else if (re.asset == null && callBack != null)
-            {
-                re.actions -= callBack;
-            }
-
         }
 
         /// <summary>
@@ -430,7 +361,7 @@ namespace TBFramework.Resource
             List<string> removeList = new List<string>();
             foreach (string name in resDic.Keys)
             {
-                if (resDic[name].RefCount <= 0)
+                if (resDic[name] == null || resDic[name].RefCount <= 0)
                 {
                     removeList.Add(name);
                 }
