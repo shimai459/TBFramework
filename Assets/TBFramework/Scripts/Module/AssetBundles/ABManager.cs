@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using TBFramework.Pool;
 using UnityEngine;
 
 namespace TBFramework.AssetBundles
@@ -26,7 +28,9 @@ namespace TBFramework.AssetBundles
         {
             if (!abs.ContainsKey(pathURL + mainName))
             {
-                abs.Add(pathURL + mainName, new ABSingle(pathURL, mainName));
+                ABSingle ab = CPoolManager.Instance.Pop<ABSingle>();
+                ab.SetPathAndMainName(pathURL, mainName);
+                abs.Add(pathURL + mainName, ab);
             }
         }
 
@@ -48,7 +52,17 @@ namespace TBFramework.AssetBundles
         public void LoadABs(string pathURL, string mainName, params string[] abNames)
         {
             AddSingleAB(pathURL, mainName);
-            abs[pathURL + mainName].LoadABs(abNames);
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].LoadABs(abNames);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
         }
 
         /// <summary>
@@ -69,7 +83,17 @@ namespace TBFramework.AssetBundles
         public void LoadAB(string abName, string pathURL, string mainName)
         {
             AddSingleAB(pathURL, mainName);
-            abs[pathURL + mainName].LoadAB(abName);
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].LoadAB(abName);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
         }
 
         /// <summary>
@@ -94,7 +118,18 @@ namespace TBFramework.AssetBundles
         public Object LoadRes(string abName, string resName, string pathURL, string mainName)
         {
             AddSingleAB(pathURL, mainName);
-            return abs[pathURL + mainName].LoadRes(abName, resName);
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    return abs[pathURL + mainName].LoadRes(abName, resName);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -119,7 +154,18 @@ namespace TBFramework.AssetBundles
         public Object LoadRes(string abName, string resName, System.Type type, string pathURL, string mainName)
         {
             AddSingleAB(pathURL, mainName);
-            return abs[pathURL + mainName].LoadRes(abName, resName, type);
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    return abs[pathURL + mainName].LoadRes(abName, resName, type);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -146,7 +192,18 @@ namespace TBFramework.AssetBundles
         public T LoadRes<T>(string abName, string resName, string pathURL, string mainName) where T : Object
         {
             AddSingleAB(pathURL, mainName);
-            return abs[pathURL + mainName].LoadRes<T>(abName, resName);
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    return abs[pathURL + mainName].LoadRes<T>(abName, resName);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -167,7 +224,17 @@ namespace TBFramework.AssetBundles
         public void LoadABsAsync(string pathURL, string mainName, params string[] abNames)
         {
             AddSingleAB(pathURL, mainName);
-            abs[pathURL + mainName].LoadABsAsync(abNames);
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].LoadABsAsync(abNames);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
         }
 
         /// <summary>
@@ -190,7 +257,17 @@ namespace TBFramework.AssetBundles
         public void LoadABAsync(string abName, string pathURL, string mainName, System.Action<AssetBundle> callBack = null)
         {
             AddSingleAB(pathURL, mainName);
-            abs[pathURL + mainName].LoadABAsync(abName, callBack);
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].LoadABAsync(abName, callBack);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
         }
 
         /// <summary>
@@ -218,7 +295,17 @@ namespace TBFramework.AssetBundles
         public void LoadResAsync(string abName, string resName, string pathURL, string mainName, System.Action<Object> callBack, bool isABAsync = true)
         {
             AddSingleAB(pathURL, mainName);
-            abs[pathURL + mainName].LoadResAsync(abName, resName, callBack, isABAsync);
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].LoadResAsync(abName, resName, callBack, isABAsync);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
         }
 
         /// <summary>
@@ -247,7 +334,18 @@ namespace TBFramework.AssetBundles
         public void LoadResAsync(string abName, string resName, System.Type type, string pathURL, string mainName, System.Action<Object> callBack, bool isABAsync = true)
         {
             AddSingleAB(pathURL, mainName);
-            abs[pathURL + mainName].LoadResAsync(abName, resName, type, callBack, isABAsync);
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].LoadResAsync(abName, resName, type, callBack, isABAsync);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
+
         }
 
         /// <summary>
@@ -276,7 +374,18 @@ namespace TBFramework.AssetBundles
         public void LoadResAsync<T>(string abName, string resName, string pathURL, string mainName, System.Action<T> callBack, bool isABAsync = true) where T : Object
         {
             AddSingleAB(pathURL, mainName);
-            abs[pathURL + mainName].LoadResAsync<T>(abName, resName, callBack, isABAsync);
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].LoadResAsync<T>(abName, resName, callBack, isABAsync);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
+
         }
 
         /// <summary>
@@ -300,7 +409,14 @@ namespace TBFramework.AssetBundles
         {
             if (abs.ContainsKey(pathURL + mainName))
             {
-                abs[pathURL + mainName].unloadAB(abName, unloadRes);
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].UnloadAB(abName, unloadRes);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
             }
         }
 
@@ -327,7 +443,14 @@ namespace TBFramework.AssetBundles
         {
             if (abs.ContainsKey(pathURL + mainName))
             {
-                abs[pathURL + mainName].UnloadABAsync(abName, unloadRes);
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].UnloadABAsync(abName, unloadRes, callBack);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
             }
         }
 
@@ -350,7 +473,14 @@ namespace TBFramework.AssetBundles
         {
             if (abs.ContainsKey(pathURL + mainName))
             {
-                abs[pathURL + mainName].UnloadAllAB(unloadRes);
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].UnloadAllAB(unloadRes);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
             }
         }
 
@@ -375,7 +505,14 @@ namespace TBFramework.AssetBundles
         {
             if (abs.ContainsKey(pathURL + mainName))
             {
-                abs[pathURL + mainName].UnloadAllABAsync(unloadRes, callBack);
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].UnloadAllABAsync(unloadRes, callBack);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
             }
         }
 
@@ -387,12 +524,24 @@ namespace TBFramework.AssetBundles
         public void UnloadAllAB(bool unloadRes)
         {
             //只有在没有任何加载的情况下,才能去卸载所有包
-            foreach (ABSingle ab in abs.Values)
+            List<string> names = new List<string>();
+            foreach (string name in abs.Keys)
             {
-                if (ab.AsyncCount <= 0)
+                if (abs[name] != null)
                 {
-                    ab.UnloadAllAB(unloadRes);
+                    if (abs[name].AsyncCount <= 0)
+                    {
+                        abs[name].UnloadAllAB(unloadRes);
+                    }
                 }
+                else
+                {
+                    names.Add(name);
+                }
+            }
+            foreach (string name in names)
+            {
+                abs.Remove(name);
             }
         }
 
@@ -404,11 +553,177 @@ namespace TBFramework.AssetBundles
         public void UnloadAllABAsync(bool unloadRes, System.Action callBack = null)
         {
             //只有在没有任何加载的情况下,才能去卸载所有包
-            foreach (ABSingle ab in abs.Values)
+            List<string> names = new List<string>();
+            foreach (string name in abs.Keys)
             {
-                if (ab.AsyncCount <= 0)
+                if (abs[name] != null)
                 {
-                    ab.UnloadAllABAsync(unloadRes, callBack);
+                    if (abs[name].AsyncCount <= 0)
+                    {
+                        abs[name].UnloadAllABAsync(unloadRes, callBack);
+                    }
+                }
+                else
+                {
+                    names.Add(name);
+                }
+            }
+            foreach (string name in names)
+            {
+                abs.Remove(name);
+            }
+        }
+
+        public void UnloadSet(string pathURL, string mainName)
+        {
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    if (abs[pathURL + mainName].AsyncCount <= 0)
+                    {
+                        UnloadOneSingleAB(pathURL, mainName, true);
+                        CPoolManager.Instance.Push(abs[pathURL + mainName]);
+                        abs.Remove(pathURL + mainName);
+                    }
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
+        }
+
+        public void UnloadSetAsync(string pathURL, string mainName, System.Action callBack = null)
+        {
+            UnloadOneSingleABAsync(pathURL, mainName, true, () =>
+            {
+                CPoolManager.Instance.Push(abs[pathURL + mainName]);
+                abs.Remove(pathURL + mainName);
+                callBack?.Invoke();
+            });
+        }
+
+        public void UnloadAllSet()
+        {
+            List<string> remove = new List<string>();
+            foreach (string name in abs.Keys)
+            {
+                ABSingle ab = abs[name];
+                if (ab != null)
+                {
+                    if (ab.AsyncCount <= 0)
+                    {
+                        ab.UnloadAllAB(true);
+                        CPoolManager.Instance.Push(ab);
+                        remove.Add(name);
+                    }
+                }
+                else
+                {
+                    remove.Add(name);
+                }
+            }
+            foreach (string name in remove)
+            {
+                abs.Remove(name);
+            }
+        }
+
+        public void UnloadAllSetAsync(System.Action callBack = null)
+        {
+            string[] names = abs.Keys.ToArray();
+            List<string> remove = new List<string>();
+            int number = 0;
+            for (int i = 0; i < names.Length; i++)
+            {
+                string name = names[i];
+                ABSingle s = abs[name];
+                if (s != null)
+                {
+                    if (s.AsyncCount <= 0)
+                    {
+                        s.UnloadAllABAsync(true, () =>
+                        {
+                            CPoolManager.Instance.Push(s);
+                            number++;
+                            remove.Add(name);
+                            if (number == names.Length - 1)
+                            {
+                                foreach (string name in remove)
+                                {
+                                    abs.Remove(name);
+                                }
+                                callBack?.Invoke();
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    number++;
+                    remove.Add(name);
+                }
+            }
+        }
+
+        public void UnloadRes(string abName, string resName, System.Action<Object> callBack, bool isDel = false, bool isSub = true)
+        {
+            UnloadRes(abName, resName, ABSet.pathURL, ABSet.mainName, callBack, isDel, isSub);
+        }
+
+        public void UnloadRes(string abName, string resName, System.Type type, System.Action<Object> callBack, bool isDel = false, bool isSub = true)
+        {
+            UnloadRes(abName, resName, ABSet.pathURL, ABSet.mainName, type, callBack, isDel, isSub);
+
+        }
+
+        public void UnloadRes<T>(string abName, string resName, System.Action<Object> callBack, bool isDel = false, bool isSub = true) where T : Object
+        {
+            UnloadRes<T>(abName, resName, ABSet.pathURL, ABSet.mainName, callBack, isDel, isSub);
+        }
+
+        public void UnloadRes(string abName, string resName, string pathURL, string mainName, System.Action<Object> callBack, bool isDel = false, bool isSub = true)
+        {
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].UnloadRes(abName, resName, callBack, isDel, isSub);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
+        }
+
+        public void UnloadRes(string abName, string resName, string pathURL, string mainName, System.Type type, System.Action<Object> callBack, bool isDel = false, bool isSub = true)
+        {
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].UnloadRes(abName, resName, type, callBack, isDel, isSub);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
+                }
+            }
+        }
+
+        public void UnloadRes<T>(string abName, string resName, string pathURL, string mainName, System.Action<Object> callBack, bool isDel = false, bool isSub = true) where T : Object
+        {
+            if (abs.ContainsKey(pathURL + mainName))
+            {
+                if (abs[pathURL + mainName] != null)
+                {
+                    abs[pathURL + mainName].UnloadRes<T>(abName, resName, callBack, isDel, isSub);
+                }
+                else
+                {
+                    abs.Remove(pathURL + mainName);
                 }
             }
         }

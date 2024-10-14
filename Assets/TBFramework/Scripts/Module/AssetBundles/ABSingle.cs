@@ -2,13 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TBFramework.Mono;
+using TBFramework.Pool;
 
 namespace TBFramework.AssetBundles
 {
     /// <summary>
     /// AB包的一个套系
     /// </summary>
-    public class ABSingle
+    public class ABSingle : CBase
     {
         private AssetBundle mainAB = null;//该套系的主包
         private AssetBundleManifest abManifest = null;//该套系的依赖
@@ -21,7 +22,21 @@ namespace TBFramework.AssetBundles
 
         private string pathURL;//该套系存放的路径
 
+        private Dictionary<string, Dictionary<string, ABResBase>> resDic = new Dictionary<string, Dictionary<string, ABResBase>>();//资源
+
+        public ABSingle() { }
+
         public ABSingle(string pathURL, string mainName)
+        {
+            SetPathAndMainName(pathURL, mainName);
+        }
+
+        /// <summary>
+        /// 设置套系信息
+        /// </summary>
+        /// <param name="pathURL"></param>
+        /// <param name="mainName"></param>
+        public void SetPathAndMainName(string pathURL, string mainName)
         {
             this.pathURL = pathURL;
             this.mainName = mainName;
@@ -109,15 +124,19 @@ namespace TBFramework.AssetBundles
         /// <returns></returns>
         public Object LoadRes(string abName, string resName)
         {
-            LoadAB(abName);
-            if (abDic.ContainsKey(abName))
+            //资源名
+            string name = resName + "_unknown";
+            return LoadRes(abName, name, () =>
             {
-                return abDic[abName].LoadAsset(resName);
-            }
-            else
-            {
-                return null;
-            }
+                if (abDic.ContainsKey(abName))
+                {
+                    return abDic[abName].LoadAsset(resName);
+                }
+                else
+                {
+                    return null;
+                }
+            });
         }
 
         /// <summary>
@@ -129,15 +148,19 @@ namespace TBFramework.AssetBundles
         /// <returns></returns>
         public Object LoadRes(string abName, string resName, System.Type type)
         {
-            LoadAB(abName);
-            if (abDic.ContainsKey(abName))
+            //资源名
+            string name = resName + "_" + type.Name;
+            return LoadRes(abName, name, () =>
             {
-                return abDic[abName].LoadAsset(resName, type);
-            }
-            else
-            {
-                return null;
-            }
+                if (abDic.ContainsKey(abName))
+                {
+                    return abDic[abName].LoadAsset(resName, type);
+                }
+                else
+                {
+                    return null;
+                }
+            }); ;
         }
 
         /// <summary>
@@ -149,15 +172,112 @@ namespace TBFramework.AssetBundles
         /// <returns></returns>
         public T LoadRes<T>(string abName, string resName) where T : Object
         {
-            LoadAB(abName);
-            if (abDic.ContainsKey(abName))
+            //资源名
+            string name = resName + "_" + typeof(T).Name;
+            return LoadRes(abName, name, () =>
             {
-                return abDic[abName].LoadAsset<T>(resName);
+                if (abDic.ContainsKey(abName))
+                {
+                    return abDic[abName].LoadAsset<T>(resName);
+                }
+                else
+                {
+                    return null;
+                }
+            }); ;
+        }
+
+        /// <summary>
+        /// 同步加载方法中相同的部分
+        /// </summary>
+        /// <param name="abName"></param>
+        /// <param name="name"></param>
+        /// <param name="func"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        private T LoadRes<T>(string abName, string name, System.Func<T> func) where T : Object
+        {
+            LoadAB(abName);
+            T obj = null;
+            //判断资源是否已经加载过或正在异步加载
+            if (resDic.ContainsKey(abName))
+            {
+                if (resDic[abName] != null)
+                {
+                    if (resDic[abName].ContainsKey(name))
+                    {
+                        if (resDic[abName][name] != null)
+                        {
+                            if (resDic[abName][name] is ABRes<T>)
+                            {
+                                ABRes<T> re = resDic[abName][name] as ABRes<T>;
+                                //资源计数+1
+                                re.AddRef();
+                                if (re.asset != null)//如果资源已经加载过，直接获取
+                                {
+                                    obj = re.asset;
+                                }
+                                else
+                                {
+                                    if (abDic.ContainsKey(abName))
+                                    {
+                                        //正在异步加载中，直接同步加载，并且将异步的协程停止
+                                        obj = func?.Invoke();
+                                        re.Invoke(obj);
+                                        MonoConManager.Instance.StopCoroutine(re.coroutine);
+                                        re.SetAsset(obj);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                ABRes<Object> re = resDic[abName][name] as ABRes<Object>;
+                                //资源计数+1
+                                re.AddRef();
+                                if (re.asset != null)//如果资源已经加载过，直接获取
+                                {
+                                    obj = re.asset as T;
+                                }
+                                else
+                                {
+                                    if (abDic.ContainsKey(abName))
+                                    {
+                                        //正在异步加载中，直接同步加载，并且将异步的协程停止
+                                        obj = func?.Invoke();
+                                        re.Invoke(obj);
+                                        MonoConManager.Instance.StopCoroutine(re.coroutine);
+                                        re.SetAsset(obj);
+                                    }
+                                }
+                            }
+                            return obj;
+                        }
+                        else
+                        {
+                            resDic[abName].Remove(name);
+                        }
+                    }
+                }
+                else
+                {
+                    resDic[abName] = new Dictionary<string, ABResBase>();
+                }
             }
             else
             {
-                return null;
+                resDic.Add(abName, new Dictionary<string, ABResBase>());
             }
+            if (abDic.ContainsKey(abName))
+            {
+                //资源没有加载过，直接同步加载
+                obj = func?.Invoke();
+                ABRes<T> re = CPoolManager.Instance.Pop<ABRes<T>>();
+                re.SetName(name);
+                re.SetAsset(obj);
+                resDic[abName].Add(name, re);
+                re.AddRef();
+            }
+            return obj;
         }
 
         /// <summary>
@@ -249,6 +369,8 @@ namespace TBFramework.AssetBundles
             asyncCount--;
         }
 
+
+
         /// <summary>
         /// 提供给外部不指定类型的异步加载AB包资源的方法
         /// </summary>
@@ -258,7 +380,8 @@ namespace TBFramework.AssetBundles
         /// <param name="isABAsync">是否使用异步加载包</param>
         public void LoadResAsync(string abName, string resName, System.Action<Object> callBack, bool isABAsync = true)
         {
-            MonoConManager.Instance.StartCoroutine(ReallyLoadResAsync(abName, resName, callBack, isABAsync));
+            string name = resName + "_unknown";
+            LoadResAsync(abName, name, callBack, isABAsync, () => MonoConManager.Instance.StartCoroutine(ReallyLoadResAsync(abName, resName, isABAsync)));
         }
 
         /// <summary>
@@ -269,7 +392,7 @@ namespace TBFramework.AssetBundles
         /// <param name="callBack">回调函数</param>
         /// <param name="isABAsync">是否使用异步加载包</param>
         /// <returns></returns>
-        private IEnumerator ReallyLoadResAsync(string abName, string resName, System.Action<Object> callBack, bool isABAsync)
+        private IEnumerator ReallyLoadResAsync(string abName, string resName, bool isABAsync)
         {
             if (isABAsync)
             {
@@ -285,7 +408,8 @@ namespace TBFramework.AssetBundles
             }
             AssetBundleRequest abRequest = abDic[abName].LoadAssetAsync(resName);
             yield return abRequest;
-            callBack(abRequest.asset);
+            string name = resName + "_unknown";
+            AfterLoadResAsync(abName, name, abRequest.asset);
         }
 
         /// <summary>
@@ -298,7 +422,8 @@ namespace TBFramework.AssetBundles
         /// <param name="isABAsync">是否使用异步加载包</param>
         public void LoadResAsync(string abName, string resName, System.Type type, System.Action<Object> callBack, bool isABAsync = true)
         {
-            MonoConManager.Instance.StartCoroutine(ReallyLoadResAsync(abName, resName, type, callBack, isABAsync));
+            string name = resName + "_" + type.Name;
+            LoadResAsync(abName, name, callBack, isABAsync, () => MonoConManager.Instance.StartCoroutine(ReallyLoadResAsync(abName, resName, type, isABAsync)));
         }
 
         /// <summary>
@@ -310,7 +435,7 @@ namespace TBFramework.AssetBundles
         /// <param name="callBack">回调函数</param>
         /// <param name="isABAsync">是否使用异步加载包</param>
         /// <returns></returns>
-        private IEnumerator ReallyLoadResAsync(string abName, string resName, System.Type type, System.Action<Object> callBack, bool isABAsync)
+        private IEnumerator ReallyLoadResAsync(string abName, string resName, System.Type type, bool isABAsync)
         {
             if (isABAsync)
             {
@@ -326,7 +451,8 @@ namespace TBFramework.AssetBundles
             }
             AssetBundleRequest abRequest = abDic[abName].LoadAssetAsync(resName, type);
             yield return abRequest;
-            callBack(abRequest.asset);
+            string name = resName + "_" + type.Name;
+            AfterLoadResAsync(abName, name, abRequest.asset);
         }
 
         /// <summary>
@@ -339,8 +465,10 @@ namespace TBFramework.AssetBundles
         /// <typeparam name="T">资源类型</typeparam>
         public void LoadResAsync<T>(string abName, string resName, System.Action<T> callBack, bool isABAsync = true) where T : Object
         {
-            MonoConManager.Instance.StartCoroutine(ReallyLoadResAsync<T>(abName, resName, callBack, isABAsync));
+            string name = resName + "_" + typeof(T).Name;
+            LoadResAsync(abName, name, callBack, isABAsync, () => MonoConManager.Instance.StartCoroutine(ReallyLoadResAsync<T>(abName, resName, isABAsync)));
         }
+
 
         /// <summary>
         /// 真正使用泛型指定类型的异步加载AB包资源的方法
@@ -351,7 +479,7 @@ namespace TBFramework.AssetBundles
         /// <param name="isABAsync">是否使用异步加载包</param>
         /// <typeparam name="T">资源类型</typeparam>
         /// <returns></returns>
-        private IEnumerator ReallyLoadResAsync<T>(string abName, string resName, System.Action<T> callBack, bool isABAsync) where T : Object
+        private IEnumerator ReallyLoadResAsync<T>(string abName, string resName, bool isABAsync) where T : Object
         {
             if (isABAsync)
             {
@@ -367,7 +495,138 @@ namespace TBFramework.AssetBundles
             }
             AssetBundleRequest abRequest = abDic[abName].LoadAssetAsync<T>(resName);
             yield return abRequest;
-            callBack(abRequest.asset as T);
+            string name = resName + "_" + typeof(T).Name;
+            AfterLoadResAsync<T>(abName, name, abRequest.asset as T);
+        }
+
+        /// <summary>
+        /// 异步加载方法相同的部分
+        /// </summary>
+        /// <param name="abName"></param>
+        /// <param name="name"></param>
+        /// <param name="callBack"></param>
+        /// <param name="isABAsync"></param>
+        /// <param name="func"></param>
+        /// <typeparam name="T"></typeparam>
+        private void LoadResAsync<T>(string abName, string name, System.Action<T> callBack, bool isABAsync, System.Func<Coroutine> func) where T : Object
+        {
+            if (isABAsync)
+            {
+                LoadABAsync(abName, null);
+            }
+            else
+            {
+                LoadAB(abName);
+            }
+            if (resDic.ContainsKey(abName))
+            {
+                if (resDic[abName] != null)
+                {
+                    if (resDic[abName].ContainsKey(name))
+                    {
+                        if (resDic[abName][name] != null)
+                        {
+                            if (resDic[abName][name] is ABRes<T>)
+                            {
+                                ABRes<T> re_ = resDic[abName][name] as ABRes<T>;
+                                re_.AddRef();
+                                if (re_.asset != null)
+                                {
+                                    callBack?.Invoke(re_.asset);
+                                }
+                                else
+                                {
+                                    re_.actions += callBack;
+                                }
+                            }
+                            else
+                            {
+                                ABRes<Object> re_ = resDic[abName][name] as ABRes<Object>;
+                                re_.AddRef();
+                                if (re_.asset != null)
+                                {
+                                    callBack?.Invoke(re_.asset as T);
+                                }
+                                else
+                                {
+                                    re_.actions += (obj) =>
+                                    {
+                                        callBack?.Invoke(obj as T);
+                                    };
+                                }
+                            }
+                            return;
+                        }
+                        else
+                        {
+                            resDic[abName].Remove(name);
+                        }
+                    }
+
+                }
+                else
+                {
+                    resDic[abName] = new Dictionary<string, ABResBase>();
+                }
+            }
+            else
+            {
+                resDic.Add(abName, new Dictionary<string, ABResBase>());
+            }
+            ABRes<T> re = CPoolManager.Instance.Pop<ABRes<T>>();
+            re.SetName(name);
+            re.actions += callBack;
+            resDic[abName].Add(name, re);
+            re.AddRef();
+            Coroutine c = func?.Invoke();
+            re.coroutine = c;
+        }
+
+        /// <summary>
+        /// 异步加载资源后执行的方法
+        /// </summary>
+        /// <param name="abName"></param>
+        /// <param name="name"></param>
+        /// <param name="asset"></param>
+        /// <typeparam name="T"></typeparam>
+        private void AfterLoadResAsync<T>(string abName, string name, T asset) where T : Object
+        {
+            if (resDic.ContainsKey(abName))
+            {
+                if (resDic[abName] != null)
+                {
+                    if (resDic[abName].ContainsKey(name))
+                    {
+                        if (resDic[abName][name] != null)
+                        {
+                            ABRes<T> re_ = resDic[abName][name] as ABRes<T>;
+                            re_.Invoke(asset);
+                            re_.SetAsset(asset);
+                            if (re_.RefCount <= 0)
+                            {
+                                UnloadAssetInRes<T>(abName, name, null, re_.isDel, false);
+                            }
+                            return;
+                        }
+                        else
+                        {
+                            resDic[abName].Remove(name);
+                        }
+                    }
+                }
+                else
+                {
+                    resDic[abName] = new Dictionary<string, ABResBase>();
+                }
+            }
+            else
+            {
+                resDic.Add(abName, new Dictionary<string, ABResBase>());
+            }
+            ABRes<T> re = CPoolManager.Instance.Pop<ABRes<T>>();
+            re.SetName(name);
+            re.SetAsset(asset);
+            resDic[abName].Add(name, re);
         }
 
         /// <summary>
@@ -375,12 +634,19 @@ namespace TBFramework.AssetBundles
         /// </summary>
         /// <param name="abName">AB包名</param>
         /// <param name="unloadRes">是否卸载资源</param>
-        public void unloadAB(string abName, bool unloadRes)
+        public void UnloadAB(string abName, bool unloadRes)
         {
             if (abDic.ContainsKey(abName))
             {
-                abDic[abName].Unload(unloadRes);
+                if (abDic[abName] != null)
+                {
+                    abDic[abName].Unload(unloadRes);
+                }
                 abDic.Remove(abName);
+            }
+            if (unloadRes)
+            {
+                UnloadReses(abName);
             }
         }
 
@@ -406,9 +672,16 @@ namespace TBFramework.AssetBundles
         {
             if (asyncCount == 0 && abDic.ContainsKey(abName))
             {
-                AsyncOperation ao = abDic[abName].UnloadAsync(unloadRes);
-                yield return ao;
+                if (abDic[abName] != null)
+                {
+                    AsyncOperation ao = abDic[abName].UnloadAsync(unloadRes);
+                    yield return ao;
+                }
                 abDic.Remove(abName);
+                if (unloadRes)
+                {
+                    UnloadReses(abName);
+                }
                 if (callBack != null)
                 {
                     callBack.Invoke();
@@ -427,9 +700,16 @@ namespace TBFramework.AssetBundles
                 mainAB.Unload(unloadRes);
                 mainAB = null;
                 abManifest = null;
-                foreach (AssetBundle ab in abDic.Values)
+                foreach (string name in abDic.Keys)
                 {
-                    ab.Unload(unloadRes);
+                    if (abDic[name] != null)
+                    {
+                        abDic[name].Unload(unloadRes);
+                    }
+                    if (unloadRes)
+                    {
+                        UnloadReses(name);
+                    }
                 }
                 abDic.Clear();
             }
@@ -458,10 +738,17 @@ namespace TBFramework.AssetBundles
                 mainAB.Unload(unloadRes);
                 mainAB = null;
                 abManifest = null;
-                foreach (AssetBundle ab in abDic.Values)
+                foreach (string name in abDic.Keys)
                 {
-                    AsyncOperation ao = ab.UnloadAsync(unloadRes);
-                    yield return ao;
+                    if (abDic[name] != null)
+                    {
+                        AsyncOperation ao = abDic[name].UnloadAsync(unloadRes);
+                        yield return ao;
+                    }
+                    if (unloadRes)
+                    {
+                        UnloadReses(name);
+                    }
                 }
                 abDic.Clear();
                 if (callBack != null)
@@ -469,6 +756,142 @@ namespace TBFramework.AssetBundles
                     callBack.Invoke();
                 }
             }
+        }
+
+        /// <summary>
+        /// 卸载单个AB包中的所有资源
+        /// </summary>
+        /// <param name="abName"></param>
+        public void UnloadReses(string abName)
+        {
+            if (resDic.ContainsKey(abName))
+            {
+                if (resDic[abName] != null)
+                {
+                    foreach (ABResBase item in resDic[abName].Values)
+                    {
+                        CPoolManager.Instance.Push(item);
+                    }
+                }
+                resDic.Remove(abName);
+            }
+        }
+
+        /// <summary>
+        /// 卸载资源的普通方法
+        /// </summary>
+        /// <param name="abName"></param>
+        /// <param name="resName"></param>
+        /// <param name="callBack"></param>
+        /// <param name="isDel"></param>
+        /// <param name="isSub"></param>
+        public void UnloadRes(string abName, string resName, System.Action<UnityEngine.Object> callBack = null, bool isDel = false, bool isSub = true)
+        {
+            string name = resName + "_unknown";
+            UnloadAssetInRes(abName, name, callBack, isDel, isSub);
+        }
+
+        /// <summary>
+        /// 卸载资源的类型方法
+        /// </summary>
+        /// <param name="abName"></param>
+        /// <param name="resName"></param>
+        /// <param name="type"></param>
+        /// <param name="callBack"></param>
+        /// <param name="isDel"></param>
+        /// <param name="isSub"></param>
+        public void UnloadRes(string abName, string resName, System.Type type, System.Action<UnityEngine.Object> callBack = null, bool isDel = false, bool isSub = true)
+        {
+            string name = resName + type.Name;
+            UnloadAssetInRes(abName, name, callBack, isDel, isSub);
+        }
+
+        /// <summary>
+        /// 卸载资源的泛型方法
+        /// </summary>
+        /// <param name="abName"></param>
+        /// <param name="resName"></param>
+        /// <param name="callBack"></param>
+        /// <param name="isDel"></param>
+        /// <param name="isSub"></param>
+        /// <typeparam name="T"></typeparam>
+        public void UnloadRes<T>(string abName, string resName, System.Action<UnityEngine.Object> callBack = null, bool isDel = false, bool isSub = true) where T : Object
+        {
+            string name = resName + typeof(T).Name;
+            UnloadAssetInRes<T>(abName, name, callBack, isDel, isSub);
+        }
+
+        /// <summary>
+        /// 卸载资源的相同步骤
+        /// </summary>
+        /// <param name="abName">AB包名</param>
+        /// <param name="name">资源字典获取名</param>
+        /// <param name="callBack">资源加载回调函数</param>
+        /// <param name="isDel">引用计数清零，是否马上卸载</param>
+        /// <param name="isSub">执行这个方法，是否引用计数减一</param>
+        /// <typeparam name="T">资源类型</typeparam>
+        private void UnloadAssetInRes<T>(string abName, string name, System.Action<T> callBack, bool isDel, bool isSub) where T : UnityEngine.Object
+        {
+            if (resDic.ContainsKey(abName))
+            {
+                if (resDic[abName] != null)
+                {
+                    if (resDic[abName].ContainsKey(name))
+                    {
+                        ABRes<T> re = resDic[abName][name] as ABRes<T>;
+                        if (re != null)
+                        {
+                            re.isDel = isDel;
+                            if (isSub)
+                            {
+                                re.SubRef();
+                            }
+                            if (re.asset != null && re.RefCount <= 0 && re.isDel)
+                            {
+                                resDic.Remove(name);
+                                Object.Destroy(re.asset);
+                                re.SetAsset(null);
+                                CPoolManager.Instance.Push(re);
+                            }
+                            else if (re.asset == null && callBack != null)
+                            {
+                                re.actions -= callBack;
+                            }
+                        }
+                        else
+                        {
+                            resDic[abName].Remove(name);
+                        }
+                    }
+                }
+                else
+                {
+                    resDic.Remove(abName);
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// 重置回归
+        /// </summary>
+        public override void Reset()
+        {
+            this.mainAB = null;
+            this.abManifest = null;
+            abDic.Clear();
+            abAsyncList.Clear();
+            asyncCount = 0;
+            mainName = null;
+            pathURL = null;
+            foreach (Dictionary<string, ABResBase> ress in resDic.Values)
+            {
+                foreach (ABResBase res in ress.Values)
+                {
+                    CPoolManager.Instance.Push(res);
+                }
+            }
+            resDic.Clear();
         }
     }
 }
