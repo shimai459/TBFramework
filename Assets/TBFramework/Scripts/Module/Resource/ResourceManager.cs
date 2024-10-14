@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TBFramework.Mono;
+using TBFramework.Pool;
 
 namespace TBFramework.Resource
 {
@@ -46,7 +47,9 @@ namespace TBFramework.Resource
             {
                 //资源没有加载过，直接同步加载
                 obj = Resources.Load(path);
-                ResEvent<UnityEngine.Object> re = new ResEvent<UnityEngine.Object>(obj, name);
+                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
+                re.SetName(name);
+                re.SetAsset(obj);
                 resDic.Add(name, re);
                 re.AddRef();
             }
@@ -85,7 +88,9 @@ namespace TBFramework.Resource
             else
             {
                 obj = Resources.Load(path, type);
-                ResEvent<UnityEngine.Object> re = new ResEvent<UnityEngine.Object>(obj, name);
+                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
+                re.SetName(name);
+                re.SetAsset(obj);
                 resDic.Add(name, re);
                 re.AddRef();
             }
@@ -121,7 +126,9 @@ namespace TBFramework.Resource
             else
             {
                 obj = Resources.Load<T>(path);
-                ResEvent<T> re = new ResEvent<T>(obj, name);
+                ResEvent<T> re = CPoolManager.Instance.Pop<ResEvent<T>>();
+                re.SetName(name);
+                re.SetAsset(obj);
                 resDic.Add(name, re);
                 re.AddRef();
             }
@@ -153,7 +160,9 @@ namespace TBFramework.Resource
             }
             else
             {
-                ResEvent<UnityEngine.Object> re = new ResEvent<UnityEngine.Object>(callBack, name);
+                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
+                re.SetName(name);
+                re.actions += callBack;
                 resDic.Add(name, re);
                 re.AddRef();
                 Coroutine c = MonoConManager.Instance.StartCoroutine(ReallyLoadAsync(path));
@@ -183,7 +192,10 @@ namespace TBFramework.Resource
             }
             else
             {
-                resDic.Add(name, new ResEvent<UnityEngine.Object>(rr.asset, name));
+                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
+                re.SetName(name);
+                re.SetAsset(rr.asset);
+                resDic.Add(name, re);
             }
         }
 
@@ -212,7 +224,9 @@ namespace TBFramework.Resource
             }
             else
             {
-                ResEvent<UnityEngine.Object> re = new ResEvent<UnityEngine.Object>(callBack, name);
+                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
+                re.SetName(name);
+                re.actions += callBack;
                 resDic.Add(name, re);
                 re.AddRef();
                 Coroutine c = MonoConManager.Instance.StartCoroutine(ReallyLoadAsync(path, type));
@@ -243,7 +257,10 @@ namespace TBFramework.Resource
             }
             else
             {
-                resDic.Add(name, new ResEvent<UnityEngine.Object>(rr.asset, name));
+                ResEvent<UnityEngine.Object> re = CPoolManager.Instance.Pop<ResEvent<UnityEngine.Object>>();
+                re.SetName(name);
+                re.SetAsset(rr.asset);
+                resDic.Add(name, re);
             }
         }
 
@@ -271,7 +288,9 @@ namespace TBFramework.Resource
             }
             else
             {
-                ResEvent<T> re = new ResEvent<T>(callBack, name);
+                ResEvent<T> re = CPoolManager.Instance.Pop<ResEvent<T>>();
+                re.SetName(name);
+                re.actions += callBack;
                 resDic.Add(name, re);
                 re.AddRef();
                 Coroutine c = MonoConManager.Instance.StartCoroutine(ReallyLoadAsync<T>(path));
@@ -302,7 +321,10 @@ namespace TBFramework.Resource
             }
             else
             {
-                resDic.Add(name, new ResEvent<T>(rr.asset as T, name));
+                ResEvent<T> re = CPoolManager.Instance.Pop<ResEvent<T>>();
+                re.SetName(name);
+                re.SetAsset(rr.asset as T);
+                resDic.Add(name, re);
             }
         }
 
@@ -380,6 +402,7 @@ namespace TBFramework.Resource
                 resDic.Remove(name);
                 Resources.UnloadAsset(re.asset);
                 re.SetAsset(null);
+                CPoolManager.Instance.Push(re);
             }
             else if (re.asset == null && callBack != null)
             {
@@ -414,6 +437,7 @@ namespace TBFramework.Resource
             }
             foreach (string name in removeList)
             {
+                CPoolManager.Instance.Push(resDic[name]);
                 resDic.Remove(name);
             }
             AsyncOperation ao = Resources.UnloadUnusedAssets();
@@ -484,6 +508,10 @@ namespace TBFramework.Resource
         /// <returns></returns>
         private IEnumerator ReallyClearDic(Action action)
         {
+            foreach (string name in resDic.Keys)
+            {
+                CPoolManager.Instance.Push(resDic[name]);
+            }
             resDic.Clear();
             AsyncOperation ao = Resources.UnloadUnusedAssets();
             yield return ao;

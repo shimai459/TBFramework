@@ -7,7 +7,6 @@ namespace TBFramework.Resource
 {
     public class ResEvent<T> : ResEventBase where T : UnityEngine.Object
     {
-        private string name;
         public T asset;
         public event Action<T> actions;
 
@@ -15,16 +14,16 @@ namespace TBFramework.Resource
 
         public bool isDel = false;
 
-        public ResEvent(T asset,string name)
+        public ResEvent() { }
+
+        public ResEvent(T asset, string name) : base(name)
         {
             SetAsset(asset);
-            this.name = name;
         }
 
-        public ResEvent(Action<T> action,string name)
+        public ResEvent(Action<T> action, string name) : base(name)
         {
             actions += action;
-            this.name = name;
         }
 
         public void Invoke(T obj)
@@ -39,18 +38,14 @@ namespace TBFramework.Resource
             this.coroutine = null;
         }
 
-
-        public void AddRef()
+        public override void Reset()
         {
-            refCount++;
-        }
-
-        public void SubRef()
-        {
-            refCount--;
-            if(refCount<0){
-                Debug.LogError($"{name}的引用计数小于0！");
-            }
+            this.name = null;
+            this.refCount = 0;
+            this.asset = null;
+            this.actions = null;
+            this.coroutine = null;
+            this.isDel = false;
         }
     }
 }
