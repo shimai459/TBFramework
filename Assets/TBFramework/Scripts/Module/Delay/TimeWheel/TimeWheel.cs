@@ -76,7 +76,7 @@ namespace TBFramework.Delay.TimeWheel
                 list = wheels[i].EventListToNewWheel(list, start);
             }
             //将已经执行过的延时事件从事件轮中清理出去
-            RemoveEvents(list);
+            RemoveEvents(list.ToArray());
         }
 
         /// <summary>

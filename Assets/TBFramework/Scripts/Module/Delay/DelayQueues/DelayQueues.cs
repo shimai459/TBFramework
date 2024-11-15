@@ -42,7 +42,7 @@ namespace TBFramework.Delay.DelayQueues
                     break;
                 }
             }
-            RemoveEvents(timeEvents);
+            RemoveEvents(timeEvents.ToArray());
         }
 
         /// <summary>

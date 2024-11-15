@@ -32,18 +32,18 @@ namespace TBFramework.Delay
         /// <returns></returns>
         public virtual DT CreateDelay(int intervalTime, E_TimerType timerType, Func<long, bool> condition)
         {
-            DT delayQueues = CPoolManager.Instance.Pop<DT>();
+            DT delay = CPoolManager.Instance.Pop<DT>();
             int uniqueKey = UniqueKeyUtil.GetUnusedKey(uniqueKeys);
-            delayQueues.Init(uniqueKey, intervalTime, timerType, condition);
-            delayDict.Add(uniqueKey, delayQueues);
-            return delayQueues;
+            delay.Init(uniqueKey, intervalTime, timerType, condition);
+            delayDict.Add(uniqueKey, delay);
+            return delay;
         }
 
         /// <summary>
         /// 通过唯一Key移除延时处理器
         /// </summary>
         /// <param name="uniqueKey">延时处理器唯一Key</param>
-        public void RemoveDelayQueues(int uniqueKey)
+        public void RemoveDelay(int uniqueKey)
         {
             if (delayDict.ContainsKey(uniqueKey))
             {
@@ -55,15 +55,15 @@ namespace TBFramework.Delay
         /// <summary>
         /// 移除延时处理器
         /// </summary>
-        /// <param name="delayQueues">延时处理器</param>
-        public void RemoveDelayQueues(DT delayQueues)
+        /// <param name="delay">延时处理器</param>
+        public void RemoveDelay(DT delay)
         {
-            if (delayQueues != null)
+            if (delay != null)
             {
-                CPoolManager.Instance.Push(delayQueues);
-                if (delayDict.ContainsKey(delayQueues.UniqueKey))
+                CPoolManager.Instance.Push(delay);
+                if (delayDict.ContainsKey(delay.UniqueKey) && delayDict[delay.UniqueKey] == delay)
                 {
-                    delayDict.Remove(delayQueues.UniqueKey);
+                    delayDict.Remove(delay.UniqueKey);
                 }
             }
         }
@@ -156,7 +156,7 @@ namespace TBFramework.Delay
         /// 清空某一延时处理器中的延时事件
         /// </summary>
         /// <param name="uniqueKey"></param>
-        public void ClearOneDelayQueues(int uniqueKey)
+        public void ClearOneDelay(int uniqueKey)
         {
             if (delayDict.ContainsKey(uniqueKey))
             {

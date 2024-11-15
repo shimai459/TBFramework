@@ -150,7 +150,11 @@ namespace TBFramework.Delay
         {
             if (timeEvent != null)
             {
-                RemoveEvent(timeEvent.UniqueKey);
+                CPoolManager.Instance.Push(timeEvent);
+                if (eventDic.ContainsKey(timeEvent.UniqueKey) && eventDic[timeEvent.UniqueKey] == timeEvent)
+                {
+                    eventDic.Remove(timeEvent.UniqueKey);
+                }
             }
         }
 
@@ -158,7 +162,7 @@ namespace TBFramework.Delay
         /// 通过唯一Key组移除多个延时事件
         /// </summary>
         /// <param name="uniqueKeys">唯一Key组</param>
-        public virtual void RemoveEvents(List<int> uniqueKeys)
+        public virtual void RemoveEvents(params int[] uniqueKeys)
         {
             if (uniqueKeys != null)
             {
@@ -173,7 +177,7 @@ namespace TBFramework.Delay
         /// 通过事件移除多个延时事件
         /// </summary>
         /// <param name="timeEvents">延时事件组</param>
-        public virtual void RemoveEvents(List<BaseTimeEvent> timeEvents)
+        public virtual void RemoveEvents(params BaseTimeEvent[] timeEvents)
         {
             if (timeEvents != null)
             {
