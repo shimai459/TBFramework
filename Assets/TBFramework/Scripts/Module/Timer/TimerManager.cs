@@ -70,7 +70,16 @@ namespace TBFramework.Timer
 
         public void RemoveTimer(I_BaseTimer timer)
         {
-            RemoveTimer(timer.UniqueKey);
+            int key = timer.UniqueKey;
+            if (timers.ContainsKey(key) && timers[key] == timer)
+            {
+                if (uniqueKeys.Contains(key))
+                {
+                    uniqueKeys.Remove(key);
+                }
+                timers.Remove(key);
+            }
+            CPoolManager.Instance.Push(timer);
         }
 
         public void Clear()
