@@ -58,7 +58,6 @@ namespace TBFramework.Pool
             }
             else if (poolStack.Count < maxNumber)
             {
-                c.Reset();
                 poolStack.Push(c);
             }
         }

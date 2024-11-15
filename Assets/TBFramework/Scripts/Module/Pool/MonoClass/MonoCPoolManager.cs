@@ -91,7 +91,7 @@ namespace TBFramework.Pool
 
         public void Push(Behaviour c, E_PoolMaxType maxType = E_PoolMaxType.InPool, int max = PoolSet.POOL_MAX_NUMBER)
         {
-            MethodInfo methodInfo = typeof(MonoCPoolManager).GetMethod("Push", 1, new Type[] { c.GetType(), typeof(E_PoolMaxType), typeof(int) });
+            MethodInfo methodInfo = GetTMethodInfo(typeof(MonoCPoolManager), "Push");
             Type[] typeArguments = new Type[] { c.GetType() };
             if (methodInfo != null && methodInfo.IsGenericMethodDefinition)
             {
@@ -156,6 +156,34 @@ namespace TBFramework.Pool
             {
                 monoCDict[typeof(T)].SetMaxType(maxType);
             }
+        }
+
+        private MethodInfo GetTMethodInfo(Type type, string name)
+        {
+
+            // 获取所有公共实例方法
+            MethodInfo[] methods = type.GetMethods();
+
+            // 遍历方法，找到名为 "Push" 的泛型方法
+            foreach (MethodInfo method in methods)
+            {
+                if (method.Name == "Push" && method.IsGenericMethodDefinition)
+                {
+                    Console.WriteLine("找到了泛型方法: " + method.Name);
+
+                    // 检查方法的参数类型
+                    ParameterInfo[] parameters = method.GetParameters();
+                    if (parameters.Length == 3 &&
+                        parameters[0].ParameterType.ToString().StartsWith("T") &&
+                        parameters[1].ParameterType == typeof(E_PoolMaxType) &&
+                        parameters[2].ParameterType == typeof(int))
+                    {
+                        return method;
+
+                    }
+                }
+            }
+            return null;
         }
     }
 }
