@@ -46,6 +46,16 @@ namespace TBFramework.AI.FSM.Simple
             }
         }
 
+        public void ChangeParam(string valueName, object value)
+        {
+            param.GetType().GetProperty(valueName).SetValue(param, value);
+        }
+
+        public V GetParam()
+        {
+            return param;
+        }
+
         public void AddState(T key, FSMSState<T, V> state)
         {
             if (!stateDic.ContainsKey(key))
