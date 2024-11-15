@@ -7,7 +7,7 @@ namespace TBFramework.AI.FSM.Detail
     public class FSMDManager : Singleton<FSMDManager>
     {
         #region Logic
-        public FSMBaseMgrObj<FSMDBaseLogic> logics = new FSMBaseMgrObj<FSMDBaseLogic>();
+        public BaseMgrObj<FSMDBaseLogic> logics = new BaseMgrObj<FSMDBaseLogic>();
 
         public FSMDLogic<T, V> CreateFSMD<T, V>(FSMDContext<T> context, FSMDStateArray<V> states, V defaultState)
         {
@@ -24,7 +24,7 @@ namespace TBFramework.AI.FSM.Detail
 
         #region Action
 
-        public FSMBaseMgrObj<FSMDBaseAction> actions = new FSMBaseMgrObj<FSMDBaseAction>();
+        public BaseMgrObj<FSMDBaseAction> actions = new BaseMgrObj<FSMDBaseAction>();
 
         public FSMDAction CreateFSMDAction(Action action)
         {
@@ -54,7 +54,7 @@ namespace TBFramework.AI.FSM.Detail
 
         #region Transition
 
-        public FSMBaseMgrObj<FSMDBaseTransition> transitions = new FSMBaseMgrObj<FSMDBaseTransition>();
+        public BaseMgrObj<FSMDBaseTransition> transitions = new BaseMgrObj<FSMDBaseTransition>();
 
         public FSMDTransition<V> CreateTransition<V>(Func<V> func)
         {
@@ -84,7 +84,7 @@ namespace TBFramework.AI.FSM.Detail
 
         #region State
 
-        public FSMBaseMgrObj<FSMDBaseState> states = new FSMBaseMgrObj<FSMDBaseState>();
+        public BaseMgrObj<FSMDBaseState> states = new BaseMgrObj<FSMDBaseState>();
 
         public FSMDState<V> CreateState<V>(FSMDBaseAction enter, FSMDBaseAction update, FSMDBaseAction exit, FSMDBaseTransition<V> transition)
         {
@@ -116,7 +116,7 @@ namespace TBFramework.AI.FSM.Detail
 
         #region StateArray
 
-        public FSMBaseMgrObj<FSMDBaseStateArray> stateArrays = new FSMBaseMgrObj<FSMDBaseStateArray>();
+        public BaseMgrObj<FSMDBaseStateArray> stateArrays = new BaseMgrObj<FSMDBaseStateArray>();
 
         public FSMDStateArray<V> CreateStateArray<V>(params (V stateKey, FSMDState<V> state)[] states)
         {
@@ -134,7 +134,7 @@ namespace TBFramework.AI.FSM.Detail
 
         #region Context
 
-        public FSMBaseMgrObj<FSMDBaseContext> contexts = new FSMBaseMgrObj<FSMDBaseContext>();
+        public BaseMgrObj<FSMDBaseContext> contexts = new BaseMgrObj<FSMDBaseContext>();
 
         public FSMDContext<T> CreateContext<T>(T param)
         {

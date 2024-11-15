@@ -1,6 +1,6 @@
 namespace TBFramework.AI.FSM.Simple
 {
-    public class FSMSBaseLogic : FSMKeyBase
+    public class FSMSBaseLogic : KeyBase
     {
 
     }

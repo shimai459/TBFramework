@@ -3,7 +3,7 @@ using TBFramework.Pool;
 namespace TBFramework.AI.FSM.Detail
 {
 
-    public abstract class FSMDBaseStateArray : FSMKeyBase
+    public abstract class FSMDBaseStateArray : KeyBase
     {
     }
 }

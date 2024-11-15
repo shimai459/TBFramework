@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using TBFramework.Pool;
 using TBFramework.Util;
 
-namespace TBFramework.AI.FSM
+namespace TBFramework.AI
 {
-    public class FSMBaseMgrObj<T> where T : FSMKeyBase
+    public class BaseMgrObj<T> where T : KeyBase
     {
         private Dictionary<int, (T obj, int count)> objs = new Dictionary<int, (T obj, int count)>();
 
