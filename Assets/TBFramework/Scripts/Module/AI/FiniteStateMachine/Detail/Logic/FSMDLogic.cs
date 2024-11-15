@@ -10,15 +10,25 @@ namespace TBFramework.AI.FSM.Detail
         private V defaultState;
         private V previousState;
 
+        private bool isAddListen = false;
+
         public FSMDLogic()
         {
             MonoConManager.Instance.AddUpdateListener(Update);
             MonoConManager.Instance.AddLateUpdateListener(LateUpdate);
             MonoConManager.Instance.AddFixedUpdateListener(FixedUpdate);
+            isAddListen = true;
         }
 
         public void Set(FSMDContext<T> context, FSMDStateArray<V> states, V defaultState)
         {
+            if (!isAddListen)
+            {
+                MonoConManager.Instance.AddUpdateListener(Update);
+                MonoConManager.Instance.AddLateUpdateListener(LateUpdate);
+                MonoConManager.Instance.AddFixedUpdateListener(FixedUpdate);
+                isAddListen = true;
+            }
             this.context = context;
             this.states = states;
             if (states.Have(defaultState))
@@ -94,10 +104,17 @@ namespace TBFramework.AI.FSM.Detail
         {
             base.Reset();
             MonoConManager.Instance.RemoveUpdateListener(Update);
+            MonoConManager.Instance.RemoveLateUpdateListener(LateUpdate);
+            MonoConManager.Instance.RemoveFixedUpdateListener(FixedUpdate);
+            isAddListen = false;
             if (context != null)
+            {
                 FSMDManager.Instance.contexts.Destory(context.key);
+            }
             if (states != null)
+            {
                 FSMDManager.Instance.stateArrays.Destory(states.key);
+            }
             context = default(FSMDContext<T>);
             states = default(FSMDStateArray<V>);
             currentState = default(V);

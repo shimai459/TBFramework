@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using TBFramework.Pool;
 using TBFramework.Util;
 
-namespace TBFramework.AI.FSM.Detail
+namespace TBFramework.AI.FSM
 {
-    public class FSMDBaseMgrObj<T> where T : FSMDKeyBase
+    public class FSMBaseMgrObj<T> where T : FSMKeyBase
     {
         private Dictionary<int, (T obj, int count)> objs = new Dictionary<int, (T obj, int count)>();
 

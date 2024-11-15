@@ -1,8 +1,8 @@
 using TBFramework.Pool;
 
-namespace TBFramework.AI.FSM.Detail
+namespace TBFramework.AI.FSM
 {
-    public abstract class FSMDKeyBase : CBase
+    public abstract class FSMKeyBase : CBase
     {
         public int key;
         public void SetKey(int key)
