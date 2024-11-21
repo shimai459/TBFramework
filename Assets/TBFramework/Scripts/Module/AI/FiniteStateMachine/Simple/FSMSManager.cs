@@ -6,7 +6,7 @@ namespace TBFramework.AI.FSM.Simple
 {
     public class FSMSManager : Singleton<FSMSManager>
     {
-        //#region Logic
+        #region Logic
         public BaseMgrObj<FSMSBaseLogic> logics = new BaseMgrObj<FSMSBaseLogic>();
 
         public FSMSLogic<T> CreateFSMS<T>(BaseContext param, T defaultState, params (T key, FSMSState<T> state)[] states)
@@ -22,9 +22,9 @@ namespace TBFramework.AI.FSM.Simple
             return logic;
         }
 
-        //#endregion
+        #endregion
 
-        //#region State
+        #region State
 
         public BaseMgrObj<FSMSBaseState> states = new BaseMgrObj<FSMSBaseState>();
 
@@ -36,9 +36,9 @@ namespace TBFramework.AI.FSM.Simple
             return state;
         }
 
-        //#endregion
+        #endregion
 
-        //#region Context
+        #region Context
 
         public BaseMgrObj<BaseContext> contexts = new BaseMgrObj<BaseContext>();
 
@@ -57,7 +57,7 @@ namespace TBFramework.AI.FSM.Simple
             return context;
         }
 
-        //#endregion
+        #endregion
 
 
     }
