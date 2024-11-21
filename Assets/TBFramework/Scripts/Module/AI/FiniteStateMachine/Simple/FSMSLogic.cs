@@ -7,36 +7,30 @@ using TBFramework.Pool;
 /// </summary>
 namespace TBFramework.AI.FSM.Simple
 {
-    public class FSMSLogic<T> : FSMSBaseLogic
+    public class FSMSLogic<T> : FSMSBaseLogic<T>
     {
-        private Dictionary<T, FSMSState<T>> stateDic = new Dictionary<T, FSMSState<T>>();
 
-        private T defaultState;
-        private T nowState;
-        private T previousState;
+        #region 初始化
 
-        private BaseContext param;
-
-        private bool isAddListen = false;
-
-        public FSMSLogic()
+        public void Set(T defaultState, params (T key, FSMSState<T> state)[] states)
         {
-            MonoConManager.Instance.AddUpdateListener(Update);
-            MonoConManager.Instance.AddLateUpdateListener(LateUpdate);
-            MonoConManager.Instance.AddFixedUpdateListener(FixedUpdate);
-            isAddListen = true;
-        }
-
-        public void Set(BaseContext param, T defaultState, params (T key, FSMSState<T> state)[] states)
-        {
-            this.param = param;
             this.AddStates(states);
             if (stateDic.ContainsKey(defaultState))
             {
                 this.defaultState = defaultState;
                 this.nowState = defaultState;
-                stateDic[defaultState]?.enter?.Invoke(param);
+                stateDic[defaultState]?.enter?.Invoke(context);
             }
+        }
+
+        #endregion
+
+        #region 运行操作
+
+        private bool isAddListen = false;
+
+        public override void StartLogic()
+        {
             if (!isAddListen)
             {
                 MonoConManager.Instance.AddUpdateListener(Update);
@@ -46,21 +40,26 @@ namespace TBFramework.AI.FSM.Simple
             }
         }
 
-        public void ChangeParam(string valueName, object value)
+        public override void StopLogic()
         {
-            param.SetValue(valueName, value);
+            MonoConManager.Instance.RemoveUpdateListener(Update);
+            MonoConManager.Instance.RemoveLateUpdateListener(LateUpdate);
+            MonoConManager.Instance.RemoveFixedUpdateListener(FixedUpdate);
+            isAddListen = false;
         }
 
-        public BaseContext GetParam()
-        {
-            return param;
-        }
+        #endregion
+
+        #region 状态字典操作
+
+        private Dictionary<T, FSMSState<T>> stateDic = new Dictionary<T, FSMSState<T>>();
 
         public void AddState(T key, FSMSState<T> state)
         {
             if (!stateDic.ContainsKey(key))
             {
                 stateDic.Add(key, state);
+                FSMSManager.Instance.states.AddUse(state);
             }
         }
 
@@ -113,47 +112,6 @@ namespace TBFramework.AI.FSM.Simple
             }
         }
 
-        public void ChangeState(T key)
-        {
-            if (stateDic.ContainsKey(key) && !key.Equals(nowState))
-            {
-                stateDic[nowState]?.exit?.Invoke(param);
-                previousState = nowState;
-                nowState = key;
-                stateDic[nowState]?.enter?.Invoke(param);
-            }
-        }
-
-        public void ToDefaultState()
-        {
-            ChangeState(defaultState);
-        }
-
-        public void ToPreviousState()
-        {
-            ChangeState(previousState);
-        }
-
-        private void Update()
-        {
-            if (stateDic[nowState] != null && stateDic[nowState].change != null)
-            {
-                T key = stateDic[nowState].change(param);
-                ChangeState(key);
-            }
-            stateDic[nowState]?.update?.Invoke(param);
-        }
-
-        private void LateUpdate()
-        {
-            stateDic[nowState]?.lateUpdate?.Invoke(param);
-        }
-
-        private void FixedUpdate()
-        {
-            stateDic[nowState]?.fixedUpdate?.Invoke(param);
-        }
-
         public void Clear()
         {
             foreach (FSMSState<T> item in stateDic.Values)
@@ -163,18 +121,75 @@ namespace TBFramework.AI.FSM.Simple
             this.stateDic.Clear();
         }
 
+        #endregion
+
+        #region 状态切换操作
+
+        public void Change(T key)
+        {
+            if (stateDic.ContainsKey(key) && !key.Equals(nowState))
+            {
+                stateDic[nowState]?.exit?.Invoke(context);
+                previousState = nowState;
+                nowState = key;
+                stateDic[nowState]?.enter?.Invoke(context);
+            }
+        }
+
+        public override void ToDefault()
+        {
+            Change(defaultState);
+        }
+
+        public void ToPrevious()
+        {
+            Change(previousState);
+        }
+
+        #endregion  
+
+        #region 运行具体逻辑
+
+        private T defaultState;
+        private T nowState;
+        private T previousState;
+
+
+        private void Update()
+        {
+            if (stateDic[nowState] != null && stateDic[nowState].change != null)
+            {
+                T key = stateDic[nowState].change(context);
+                Change(key);
+            }
+            stateDic[nowState]?.update?.Invoke(context);
+        }
+
+        private void LateUpdate()
+        {
+            stateDic[nowState]?.lateUpdate?.Invoke(context);
+        }
+
+        private void FixedUpdate()
+        {
+            stateDic[nowState]?.fixedUpdate?.Invoke(context);
+        }
+
+        #endregion
+
+        #region 重置
+
         public override void Reset()
         {
             base.Reset();
-            MonoConManager.Instance.RemoveUpdateListener(Update);
-            MonoConManager.Instance.RemoveLateUpdateListener(LateUpdate);
-            MonoConManager.Instance.RemoveFixedUpdateListener(FixedUpdate);
-            isAddListen = false;
+            this.StopLogic();
             this.Clear();
-            this.param = default(BaseContext);
             this.nowState = default(T);
             this.defaultState = default(T);
             this.previousState = default(T);
         }
+
+        #endregion
+
     }
 }

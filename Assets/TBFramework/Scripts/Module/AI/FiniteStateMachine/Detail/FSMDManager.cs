@@ -9,15 +9,48 @@ namespace TBFramework.AI.FSM.Detail
         #region Logic
         public BaseMgrObj<FSMDBaseLogic> logics = new BaseMgrObj<FSMDBaseLogic>();
 
-        public FSMDLogic<V> CreateFSMD<V>(BaseContext context, FSMDStateArray<V> states, V defaultState)
+        public FSMDLogic<T> CreateFSMD<T>(T defaultState, BaseContext context, params (T key, FSMDState state)[] states)
         {
-            FSMDLogic<V> logic = CPoolManager.Instance.Pop<FSMDLogic<V>>();
-            logic.Set(context, states, defaultState);
+            FSMDLogic<T> logic = CPoolManager.Instance.Pop<FSMDLogic<T>>();
+            logic.Set(defaultState, states);
+            logic.SetContext(context);
+            logic.StartLogic();
             contexts.AddUse(context);
-            stateArrays.AddUse(states);
             logics.Create(logic);
             logics.AddUse(logic);
             return logic;
+        }
+
+        public FSMDLogic<T> CreateFSMD<T>(T defaultState, FSMDTransitionNoParam<T> transition, params (T key, FSMDState state)[] states)
+        {
+            FSMDLogic<T> logic = CPoolManager.Instance.Pop<FSMDLogic<T>>();
+            logic.Set(defaultState, states);
+            logic.SetTransition(transition);
+            transitions.AddUse(transition);
+            logics.Create(logic);
+            logics.AddUse(logic);
+            return logic;
+        }
+
+        public FSMDLogicArray<T> CreateFSMDArray<T>(BaseContext context, T defaultState, params (T key, FSMDBaseLogic logic)[] logics)
+        {
+            FSMDLogicArray<T> logicArray = CPoolManager.Instance.Pop<FSMDLogicArray<T>>();
+            logicArray.SetContext(context);
+            logicArray.Set(defaultState, logics);
+            logicArray.StartLogic();
+            contexts.AddUse(context);
+            this.logics.AddUse(logicArray);
+            return logicArray;
+        }
+
+        public FSMDLogicArray<T> CreateFSMDArray<T>(T defaultState, FSMDTransitionNoParam<T> transition, params (T key, FSMDBaseLogic logic)[] logics)
+        {
+            FSMDLogicArray<T> logicArray = CPoolManager.Instance.Pop<FSMDLogicArray<T>>();
+            logicArray.Set(defaultState, logics);
+            logicArray.SetTransition(transition);
+            this.logics.AddUse(logicArray);
+            this.transitions.AddUse(transition);
+            return logicArray;
         }
 
         #endregion
@@ -26,25 +59,25 @@ namespace TBFramework.AI.FSM.Detail
 
         public BaseMgrObj<FSMDBaseAction> actions = new BaseMgrObj<FSMDBaseAction>();
 
-        public FSMDAction CreateFSMDAction(Action action)
+        public FSMDActionNoParam CreateFSMDAction(Action action)
         {
-            FSMDAction fsmdAction = CPoolManager.Instance.Pop<FSMDAction>();
+            FSMDActionNoParam fsmdAction = CPoolManager.Instance.Pop<FSMDActionNoParam>();
             fsmdAction.Set(action);
             actions.Create(fsmdAction);
             return fsmdAction;
         }
 
-        public FSMDAction<T> CreateFSMDAction<T>(T param, Action<T> action)
+        public FSMDActionWithInParam<T> CreateFSMDAction<T>(T param, Action<T> action)
         {
-            FSMDAction<T> fsmdAction = CPoolManager.Instance.Pop<FSMDAction<T>>();
+            FSMDActionWithInParam<T> fsmdAction = CPoolManager.Instance.Pop<FSMDActionWithInParam<T>>();
             fsmdAction.Set(param, action);
             actions.Create(fsmdAction);
             return fsmdAction;
         }
 
-        public FSMDAction<BaseContext> CreateFSMDAction(Action<BaseContext> action)
+        public FSMDActionWithContext CreateFSMDAction(Action<BaseContext> action)
         {
-            FSMDAction<BaseContext> fsmdAction = CPoolManager.Instance.Pop<FSMDAction<BaseContext>>();
+            FSMDActionWithContext fsmdAction = CPoolManager.Instance.Pop<FSMDActionWithContext>();
             fsmdAction.Set(action);
             actions.Create(fsmdAction);
             return fsmdAction;
@@ -56,25 +89,25 @@ namespace TBFramework.AI.FSM.Detail
 
         public BaseMgrObj<FSMDBaseTransition> transitions = new BaseMgrObj<FSMDBaseTransition>();
 
-        public FSMDTransition<V> CreateTransition<V>(Func<V> func)
+        public FSMDTransitionNoParam<T> CreateTransition<T>(Func<T> func)
         {
-            FSMDTransition<V> transition = CPoolManager.Instance.Pop<FSMDTransition<V>>();
+            FSMDTransitionNoParam<T> transition = CPoolManager.Instance.Pop<FSMDTransitionNoParam<T>>();
             transition.Set(func);
             transitions.Create(transition);
             return transition;
         }
 
-        public FSMDTransition<T, V> CreateTransition<T, V>(T param, Func<T, V> func)
+        public FSMDTransitionWithInParam<V, T> CreateTransition<V, T>(V param, Func<V, T> func)
         {
-            FSMDTransition<T, V> transition = CPoolManager.Instance.Pop<FSMDTransition<T, V>>();
+            FSMDTransitionWithInParam<V, T> transition = CPoolManager.Instance.Pop<FSMDTransitionWithInParam<V, T>>();
             transition.Set(param, func);
             transitions.Create(transition);
             return transition;
         }
 
-        public FSMDTransition<BaseContext, V> CreateTransition<V>(Func<BaseContext, V> func)
+        public FSMDTransitionWithContext<T> CreateTransition<T>(Func<BaseContext, T> func)
         {
-            FSMDTransition<BaseContext, V> transition = CPoolManager.Instance.Pop<FSMDTransition<BaseContext, V>>();
+            FSMDTransitionWithContext<T> transition = CPoolManager.Instance.Pop<FSMDTransitionWithContext<T>>();
             transition.Set(func);
             transitions.Create(transition);
             return transition;
@@ -84,11 +117,11 @@ namespace TBFramework.AI.FSM.Detail
 
         #region State
 
-        public BaseMgrObj<FSMDBaseState> states = new BaseMgrObj<FSMDBaseState>();
+        public BaseMgrObj<FSMDState> states = new BaseMgrObj<FSMDState>();
 
-        public FSMDState<V> CreateState<V>(FSMDBaseAction enter, FSMDBaseAction update, FSMDBaseAction exit, FSMDBaseTransition<V> transition)
+        public FSMDState CreateState(FSMDBaseAction enter, FSMDBaseAction update, FSMDBaseAction exit, FSMDBaseTransition transition)
         {
-            FSMDState<V> state = CPoolManager.Instance.Pop<FSMDState<V>>();
+            FSMDState state = CPoolManager.Instance.Pop<FSMDState>();
             state.Set(enter, update, exit, transition);
             actions.AddUse(enter.key);
             actions.AddUse(update.key);
@@ -98,9 +131,9 @@ namespace TBFramework.AI.FSM.Detail
             return state;
         }
 
-        public FSMDState<V> CreateState<V>(FSMDBaseAction enter, FSMDBaseAction update, FSMDBaseAction lateUpdate, FSMDBaseAction fixedUpdate, FSMDBaseAction exit, FSMDBaseTransition<V> transition)
+        public FSMDState CreateState<T>(FSMDBaseAction enter, FSMDBaseAction update, FSMDBaseAction lateUpdate, FSMDBaseAction fixedUpdate, FSMDBaseAction exit, FSMDBaseTransition<T> transition)
         {
-            FSMDState<V> state = CPoolManager.Instance.Pop<FSMDState<V>>();
+            FSMDState state = CPoolManager.Instance.Pop<FSMDState>();
             state.Set(enter, update, lateUpdate, fixedUpdate, exit, transition);
             actions.AddUse(enter.key);
             actions.AddUse(update.key);
@@ -110,24 +143,6 @@ namespace TBFramework.AI.FSM.Detail
             transitions.AddUse(transition.key);
             states.Create(state);
             return state;
-        }
-
-        #endregion
-
-        #region StateArray
-
-        public BaseMgrObj<FSMDBaseStateArray> stateArrays = new BaseMgrObj<FSMDBaseStateArray>();
-
-        public FSMDStateArray<V> CreateStateArray<V>(params (V stateKey, FSMDState<V> state)[] states)
-        {
-            FSMDStateArray<V> stateArray = CPoolManager.Instance.Pop<FSMDStateArray<V>>();
-            stateArray.Set(states);
-            for (int i = 0; i < states.Length; i++)
-            {
-                this.states.AddUse(states[i].state.key);
-            }
-            stateArrays.Create(stateArray);
-            return stateArray;
         }
 
         #endregion

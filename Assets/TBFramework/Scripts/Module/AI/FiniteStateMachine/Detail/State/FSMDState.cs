@@ -2,7 +2,7 @@ using TBFramework.Pool;
 
 namespace TBFramework.AI.FSM.Detail
 {
-    public class FSMDState<V> : FSMDBaseState
+    public class FSMDState : KeyBase
     {
         public FSMDBaseAction enter;
 
@@ -14,9 +14,9 @@ namespace TBFramework.AI.FSM.Detail
 
         public FSMDBaseAction exit;
 
-        public FSMDBaseTransition<V> transition;
+        public FSMDBaseTransition transition;
 
-        public void Set(FSMDBaseAction enter, FSMDBaseAction update, FSMDBaseAction exit, FSMDBaseTransition<V> transition)
+        public void Set(FSMDBaseAction enter, FSMDBaseAction update, FSMDBaseAction exit, FSMDBaseTransition transition)
         {
             this.enter = enter;
             this.update = update;
@@ -24,7 +24,7 @@ namespace TBFramework.AI.FSM.Detail
             this.transition = transition;
         }
 
-        public void Set(FSMDBaseAction enter, FSMDBaseAction update, FSMDBaseAction lateUpdate, FSMDBaseAction fixedUpdate, FSMDBaseAction exit, FSMDBaseTransition<V> transition)
+        public void Set(FSMDBaseAction enter, FSMDBaseAction update, FSMDBaseAction lateUpdate, FSMDBaseAction fixedUpdate, FSMDBaseAction exit, FSMDBaseTransition transition)
         {
             this.enter = enter;
             this.update = update;

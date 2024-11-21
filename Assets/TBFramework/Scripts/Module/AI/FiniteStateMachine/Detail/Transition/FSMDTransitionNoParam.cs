@@ -2,19 +2,16 @@ using System;
 
 namespace TBFramework.AI.FSM.Detail
 {
-    public class FSMDTransition<V> : FSMDBaseTransition<V>
+    public class FSMDTransitionNoParam<T> : FSMDBaseTransition<T>
     {
-        public event Func<V> func;
+        public event Func<T> func;
 
-        public FSMDTransition() { }
-
-        public void Set(Func<V> func)
+        public void Set(Func<T> func)
         {
-            this.type = E_FSMDTransitionType.NoParam;
             this.func = func;
         }
 
-        public override V Change(BaseContext context)
+        public override T Change(BaseContext context)
         {
             if (func != null)
             {
@@ -22,7 +19,7 @@ namespace TBFramework.AI.FSM.Detail
             }
             else
             {
-                return default(V);
+                return default(T);
             }
         }
 

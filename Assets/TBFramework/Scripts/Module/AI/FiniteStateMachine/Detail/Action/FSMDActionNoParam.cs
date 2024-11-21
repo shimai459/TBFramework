@@ -3,15 +3,14 @@ using System;
 
 namespace TBFramework.AI.FSM.Detail
 {
-    public class FSMDAction : FSMDBaseAction
+    public class FSMDActionNoParam : FSMDBaseAction
     {
         public event Action action;
 
-        public FSMDAction() { }
+        public FSMDActionNoParam() { }
 
         public void Set(Action action)
         {
-            this.type = E_FSMDActionType.NoParam;
             this.action = action;
         }
 

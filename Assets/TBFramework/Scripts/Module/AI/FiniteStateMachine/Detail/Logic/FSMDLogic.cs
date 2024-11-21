@@ -1,26 +1,31 @@
+using System.Collections.Generic;
 using TBFramework.Mono;
 
 namespace TBFramework.AI.FSM.Detail
 {
-    public class FSMDLogic<V> : FSMDBaseLogic
+    public class FSMDLogic<T> : FSMDBaseLogic
     {
-        private BaseContext context;
-        private FSMDStateArray<V> states;
-        private V currentState;
-        private V defaultState;
-        private V previousState;
+
+        //private FSMDStateArray<T> states;
+        #region 初始化
+        public void Set(T defaultState, params (T stateKey, FSMDState state)[] states)
+        {
+            this.AddStates(states);
+            if (this.states.ContainsKey(defaultState))
+            {
+                this.defaultState = defaultState;
+                this.currentState = defaultState;
+                this.states[defaultState]?.enter?.Invoke(context);
+            }
+        }
+
+        #endregion
+
+        #region 运行操作
 
         private bool isAddListen = false;
 
-        public FSMDLogic()
-        {
-            MonoConManager.Instance.AddUpdateListener(Update);
-            MonoConManager.Instance.AddLateUpdateListener(LateUpdate);
-            MonoConManager.Instance.AddFixedUpdateListener(FixedUpdate);
-            isAddListen = true;
-        }
-
-        public void Set(BaseContext context, FSMDStateArray<V> states, V defaultState)
+        public override void StartLogic()
         {
             if (!isAddListen)
             {
@@ -29,98 +34,186 @@ namespace TBFramework.AI.FSM.Detail
                 MonoConManager.Instance.AddFixedUpdateListener(FixedUpdate);
                 isAddListen = true;
             }
-            this.context = context;
-            this.states = states;
-            if (states.Have(defaultState))
+        }
+
+        public override void StopLogic()
+        {
+            MonoConManager.Instance.RemoveUpdateListener(Update);
+            MonoConManager.Instance.RemoveLateUpdateListener(LateUpdate);
+            MonoConManager.Instance.RemoveFixedUpdateListener(FixedUpdate);
+            isAddListen = false;
+        }
+
+        #endregion
+
+        #region 状态字典
+
+        private Dictionary<T, FSMDState> states = new Dictionary<T, FSMDState>();
+
+        public void AddState(T key, FSMDState state)
+        {
+            if (!states.ContainsKey(key))
             {
-                this.defaultState = defaultState;
-                this.currentState = defaultState;
-                states.Get(defaultState)?.enter?.Invoke(context);
+                states.Add(key, state);
+                FSMDManager.Instance.states.AddUse(state);
             }
         }
 
+        public void AddStates((T stateKey, FSMDState state)[] states)
+        {
+            for (int i = 0; i < states.Length; i++)
+            {
+                AddState(states[i].stateKey, states[i].state);
+            }
+        }
+
+        public void ChangeState(T key, FSMDState state)
+        {
+            RemoveState(key);
+            AddState(key, state);
+        }
+
+        public void ChangeStates((T stateKey, FSMDState state)[] states)
+        {
+            for (int i = 0; i < states.Length; i++)
+            {
+                ChangeState(states[i].stateKey, states[i].state);
+            }
+        }
+
+        public void RemoveState(T key)
+        {
+            if (states.ContainsKey(key))
+            {
+                if (states[key] != null)
+                {
+                    FSMDManager.Instance.states.Destory(states[key].key);
+                }
+                states.Remove(key);
+            }
+        }
+
+        public void RemoveStates(T[] keys)
+        {
+            for (int i = 0; i < keys.Length; i++)
+            {
+                RemoveState(keys[i]);
+            }
+        }
+
+        public void RemoveState(FSMDState state)
+        {
+            if (states.ContainsValue(state))
+            {
+                foreach (var item in states)
+                {
+                    if (item.Value == state)
+                    {
+                        FSMDManager.Instance.states.Destory(state.key);
+                        states.Remove(item.Key);
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void RemoveStates(FSMDState[] states)
+        {
+            for (int i = 0; i < states.Length; i++)
+            {
+                RemoveState(states[i]);
+            }
+        }
+
+        public void Clear()
+        {
+            foreach (FSMDState state in states.Values)
+            {
+                FSMDManager.Instance.states.Destory(state.key);
+            }
+            states.Clear();
+        }
+
+
+        #endregion
+
+        #region 运行具体逻辑
+
+        private T currentState;
+        private T defaultState;
+        private T previousState;
+
         private void Update()
         {
-            if (currentState != null && states.Have(currentState))
+            if (currentState != null && states.ContainsKey(currentState))
             {
-                if (states.Get(currentState).transition != null)
+                FSMDBaseTransition transition = states[currentState].transition;
+                if (transition != null && transition is FSMDBaseTransition<T>)
                 {
-                    V newState = states.Get(currentState).transition.Change(context);
-                    ChangeState(newState);
+                    T newState = (transition as FSMDBaseTransition<T>).Change(context);
+                    Change(newState);
                 }
 
-                states.Get(currentState)?.update?.Invoke(context);
+                states[currentState]?.update?.Invoke(context);
             }
         }
 
         private void LateUpdate()
         {
-            if (currentState != null && states.Have(currentState))
+            if (currentState != null && states.ContainsKey(currentState))
             {
-                states.Get(currentState)?.lateUpdate?.Invoke(context);
+                states[currentState]?.lateUpdate?.Invoke(context);
             }
         }
 
         private void FixedUpdate()
         {
-            if (currentState != null && states.Have(currentState))
+            if (currentState != null && states.ContainsKey(currentState))
             {
-                states.Get(currentState)?.fixedUpdate?.Invoke(context);
+                states[currentState]?.fixedUpdate?.Invoke(context);
             }
         }
 
-        public void ChangeState(V state)
+        #endregion
+
+        #region 变更
+
+        public void Change(T state)
         {
-            if (!state.Equals(default(V)) && !state.Equals(currentState) && states.Have(state))
+            if (!state.Equals(default(T)) && !state.Equals(currentState) && states.ContainsKey(state))
             {
-                states.Get(currentState)?.exit?.Invoke(context);
+                states[currentState]?.exit?.Invoke(context);
                 previousState = currentState;
                 currentState = state;
-                states.Get(currentState)?.enter?.Invoke(context);
+                states[currentState]?.enter?.Invoke(context);
             }
         }
 
-        public void ToDefaultState()
+        public override void ToDefault()
         {
-            ChangeState(defaultState);
+            Change(defaultState);
         }
 
-        public void ToPreviousState()
+        public void ToPrevious()
         {
-            ChangeState(previousState);
+            Change(previousState);
         }
 
-        public BaseContext GetContext()
-        {
-            return context;
-        }
+        #endregion
 
-        public void SetContextOneValue(string valueName, object value)
-        {
-            context.SetValue(valueName, value);
-        }
+        #region 重置
 
         public override void Reset()
         {
             base.Reset();
-            MonoConManager.Instance.RemoveUpdateListener(Update);
-            MonoConManager.Instance.RemoveLateUpdateListener(LateUpdate);
-            MonoConManager.Instance.RemoveFixedUpdateListener(FixedUpdate);
-            isAddListen = false;
-            if (context != null)
-            {
-                FSMDManager.Instance.contexts.Destory(context.key);
-            }
-            if (states != null)
-            {
-                FSMDManager.Instance.stateArrays.Destory(states.key);
-            }
-            context = default(BaseContext);
-            states = default(FSMDStateArray<V>);
-            currentState = default(V);
-            previousState = default(V);
-            defaultState = default(V);
+            this.StopLogic();
+            this.Clear();
+            currentState = default(T);
+            previousState = default(T);
+            defaultState = default(T);
         }
+
+        #endregion
 
     }
 }

@@ -9,16 +9,44 @@ namespace TBFramework.AI.FSM.Simple
         #region Logic
         public BaseMgrObj<FSMSBaseLogic> logics = new BaseMgrObj<FSMSBaseLogic>();
 
-        public FSMSLogic<T> CreateFSMS<T>(BaseContext param, T defaultState, params (T key, FSMSState<T> state)[] states)
+        public FSMSLogic<T> CreateFSMS<T>(T defaultState, BaseContext context, params (T key, FSMSState<T> state)[] states)
         {
             FSMSLogic<T> logic = CPoolManager.Instance.Pop<FSMSLogic<T>>();
-            logic.Set(param, defaultState, states);
-            for (int i = 0; i < states.Length; i++)
-            {
-                this.states.AddUse(states[i].state);
-            }
+            logic.Set(defaultState, states);
+            logic.SetContext(context);
+            logic.StartLogic();
             logics.Create(logic);
             logics.AddUse(logic);
+            return logic;
+        }
+
+        public FSMSLogic<T> CreateFSMS<T>(T defaultState, Func<BaseContext, T> func, params (T key, FSMSState<T> state)[] states)
+        {
+            FSMSLogic<T> logic = CPoolManager.Instance.Pop<FSMSLogic<T>>();
+            logic.Set(defaultState, states);
+            logic.SetFunc(func);
+            logic.StartLogic();
+            logics.Create(logic);
+            return logic;
+        }
+
+        public FSMSLogicArray<T> CreateFSMSArray<T>(T defaultState, BaseContext context, params (T key, FSMSBaseLogic logic)[] logics)
+        {
+            FSMSLogicArray<T> logic = CPoolManager.Instance.Pop<FSMSLogicArray<T>>();
+            logic.Set(defaultState, logics);
+            logic.SetContext(context);
+            logic.StartLogic();
+            this.logics.Create(logic);
+            this.logics.AddUse(logic);
+            return logic;
+        }
+
+        public FSMSLogicArray<T> CreateFSMSArray<T>(T defaultState, Func<BaseContext, T> func, params (T key, FSMSBaseLogic logic)[] logics)
+        {
+            FSMSLogicArray<T> logic = CPoolManager.Instance.Pop<FSMSLogicArray<T>>();
+            logic.Set(defaultState, logics);
+            logic.SetFunc(func);
+            this.logics.Create(logic);
             return logic;
         }
 
