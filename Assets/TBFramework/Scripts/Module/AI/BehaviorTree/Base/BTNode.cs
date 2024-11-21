@@ -1,12 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+
+using TBFramework.Pool;
+
 namespace TBFramework.AI.BT
 {
-    public abstract class BTNode
+    public abstract class BTNode : KeyBase
     {
-        //该节点的准入条件
-        public BTPrecondition precondition;
-        public abstract E_BTNodeState Evaluate();
+        public abstract E_BTNodeState Evaluate(BaseContext context);
     }
 }
