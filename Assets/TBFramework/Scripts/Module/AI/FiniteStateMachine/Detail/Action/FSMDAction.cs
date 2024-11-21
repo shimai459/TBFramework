@@ -15,7 +15,7 @@ namespace TBFramework.AI.FSM.Detail
             this.action = action;
         }
 
-        public override void Invoke<T>(FSMDContext<T> context)
+        public override void Invoke(BaseContext context)
         {
             action?.Invoke();
         }

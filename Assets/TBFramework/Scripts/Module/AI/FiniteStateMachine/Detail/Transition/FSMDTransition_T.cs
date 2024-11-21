@@ -7,7 +7,7 @@ namespace TBFramework.AI.FSM.Detail
         public T param;
         public event Func<T, V> funcWithIn;
 
-        public event Func<FSMDBaseContext, V> funcWithOut;
+        public event Func<BaseContext, V> funcWithOut;
 
         public FSMDTransition() { }
 
@@ -18,13 +18,13 @@ namespace TBFramework.AI.FSM.Detail
             this.funcWithIn = func;
         }
 
-        public void Set(Func<FSMDBaseContext, V> func)
+        public void Set(Func<BaseContext, V> func)
         {
             this.type = E_FSMDTransitionType.OutParam;
             this.funcWithOut = func;
         }
 
-        public override V Change(FSMDBaseContext context)
+        public override V Change(BaseContext context)
         {
             switch (type)
             {

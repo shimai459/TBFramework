@@ -14,7 +14,7 @@ namespace TBFramework.AI.FSM.Detail
             this.func = func;
         }
 
-        public override V Change(FSMDBaseContext context)
+        public override V Change(BaseContext context)
         {
             if (func != null)
             {

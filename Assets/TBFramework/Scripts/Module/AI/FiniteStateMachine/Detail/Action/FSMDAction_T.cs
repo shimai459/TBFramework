@@ -7,7 +7,7 @@ namespace TBFramework.AI.FSM.Detail
         public T param;
         public event Action<T> actionWithSelf;
 
-        public event Action<FSMDBaseContext> actionWithOut;
+        public event Action<BaseContext> actionWithOut;
 
         public FSMDAction() { }
 
@@ -18,13 +18,13 @@ namespace TBFramework.AI.FSM.Detail
             this.actionWithSelf = action;
         }
 
-        public void Set(Action<FSMDBaseContext> action)
+        public void Set(Action<BaseContext> action)
         {
             this.type = E_FSMDActionType.OutParam;
             this.actionWithOut = action;
         }
 
-        public override void Invoke<A>(FSMDContext<A> context)
+        public override void Invoke(BaseContext context)
         {
             switch (type)
             {

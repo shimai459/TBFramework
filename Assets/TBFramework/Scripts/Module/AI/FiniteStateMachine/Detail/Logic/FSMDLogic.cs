@@ -2,9 +2,9 @@ using TBFramework.Mono;
 
 namespace TBFramework.AI.FSM.Detail
 {
-    public class FSMDLogic<T, V> : FSMDBaseLogic
+    public class FSMDLogic<V> : FSMDBaseLogic
     {
-        private FSMDContext<T> context;
+        private BaseContext context;
         private FSMDStateArray<V> states;
         private V currentState;
         private V defaultState;
@@ -20,7 +20,7 @@ namespace TBFramework.AI.FSM.Detail
             isAddListen = true;
         }
 
-        public void Set(FSMDContext<T> context, FSMDStateArray<V> states, V defaultState)
+        public void Set(BaseContext context, FSMDStateArray<V> states, V defaultState)
         {
             if (!isAddListen)
             {
@@ -90,7 +90,7 @@ namespace TBFramework.AI.FSM.Detail
             ChangeState(previousState);
         }
 
-        public FSMDContext<T> GetContext()
+        public BaseContext GetContext()
         {
             return context;
         }
@@ -115,7 +115,7 @@ namespace TBFramework.AI.FSM.Detail
             {
                 FSMDManager.Instance.stateArrays.Destory(states.key);
             }
-            context = default(FSMDContext<T>);
+            context = default(BaseContext);
             states = default(FSMDStateArray<V>);
             currentState = default(V);
             previousState = default(V);

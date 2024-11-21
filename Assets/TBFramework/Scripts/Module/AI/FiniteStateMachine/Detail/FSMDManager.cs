@@ -9,9 +9,9 @@ namespace TBFramework.AI.FSM.Detail
         #region Logic
         public BaseMgrObj<FSMDBaseLogic> logics = new BaseMgrObj<FSMDBaseLogic>();
 
-        public FSMDLogic<T, V> CreateFSMD<T, V>(FSMDContext<T> context, FSMDStateArray<V> states, V defaultState)
+        public FSMDLogic<V> CreateFSMD<V>(BaseContext context, FSMDStateArray<V> states, V defaultState)
         {
-            FSMDLogic<T, V> logic = CPoolManager.Instance.Pop<FSMDLogic<T, V>>();
+            FSMDLogic<V> logic = CPoolManager.Instance.Pop<FSMDLogic<V>>();
             logic.Set(context, states, defaultState);
             contexts.AddUse(context);
             stateArrays.AddUse(states);
@@ -42,9 +42,9 @@ namespace TBFramework.AI.FSM.Detail
             return fsmdAction;
         }
 
-        public FSMDAction<FSMDBaseContext> CreateFSMDAction(Action<FSMDBaseContext> action)
+        public FSMDAction<BaseContext> CreateFSMDAction(Action<BaseContext> action)
         {
-            FSMDAction<FSMDBaseContext> fsmdAction = CPoolManager.Instance.Pop<FSMDAction<FSMDBaseContext>>();
+            FSMDAction<BaseContext> fsmdAction = CPoolManager.Instance.Pop<FSMDAction<BaseContext>>();
             fsmdAction.Set(action);
             actions.Create(fsmdAction);
             return fsmdAction;
@@ -72,9 +72,9 @@ namespace TBFramework.AI.FSM.Detail
             return transition;
         }
 
-        public FSMDTransition<FSMDBaseContext, V> CreateTransition<V>(Func<FSMDBaseContext, V> func)
+        public FSMDTransition<BaseContext, V> CreateTransition<V>(Func<BaseContext, V> func)
         {
-            FSMDTransition<FSMDBaseContext, V> transition = CPoolManager.Instance.Pop<FSMDTransition<FSMDBaseContext, V>>();
+            FSMDTransition<BaseContext, V> transition = CPoolManager.Instance.Pop<FSMDTransition<BaseContext, V>>();
             transition.Set(func);
             transitions.Create(transition);
             return transition;
@@ -134,12 +134,19 @@ namespace TBFramework.AI.FSM.Detail
 
         #region Context
 
-        public BaseMgrObj<FSMDBaseContext> contexts = new BaseMgrObj<FSMDBaseContext>();
+        public BaseMgrObj<BaseContext> contexts = new BaseMgrObj<BaseContext>();
 
-        public FSMDContext<T> CreateContext<T>(T param)
+        public ContextWithTParam<T> CreateContext<T>(T param)
         {
-            FSMDContext<T> context = CPoolManager.Instance.Pop<FSMDContext<T>>();
+            ContextWithTParam<T> context = CPoolManager.Instance.Pop<ContextWithTParam<T>>();
             context.Set(param);
+            contexts.Create(context);
+            return context;
+        }
+
+        public ContextWithDic CreateContext()
+        {
+            ContextWithDic context = CPoolManager.Instance.Pop<ContextWithDic>();
             contexts.Create(context);
             return context;
         }

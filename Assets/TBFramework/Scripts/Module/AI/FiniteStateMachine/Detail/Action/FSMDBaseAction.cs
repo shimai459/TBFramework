@@ -7,6 +7,6 @@ namespace TBFramework.AI.FSM.Detail
     {
         public E_FSMDActionType type;
 
-        public abstract void Invoke<T>(FSMDContext<T> context);
+        public abstract void Invoke(BaseContext context);
     }
 }

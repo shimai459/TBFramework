@@ -7,6 +7,6 @@ namespace TBFramework.AI.FSM.Detail
 
     public abstract class FSMDBaseTransition<V> : FSMDBaseTransition
     {
-        public abstract V Change(FSMDBaseContext context);
+        public abstract V Change(BaseContext context);
     }
 }

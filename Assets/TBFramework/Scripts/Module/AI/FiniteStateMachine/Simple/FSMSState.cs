@@ -7,9 +7,9 @@ namespace TBFramework.AI.FSM.Simple
     /// <summary>
     /// AI状态基类
     /// </summary>
-    public class FSMSState<T, V> : FSMSBaseState
+    public class FSMSState<T> : FSMSBaseState
     {
-        public void Set(Action<V> enter, Action<V> update, Action<V> lateUpdate, Action<V> fixedUpdate, Action<V> exit, Func<V, T> change)
+        public void Set(Action<BaseContext> enter, Action<BaseContext> update, Action<BaseContext> lateUpdate, Action<BaseContext> fixedUpdate, Action<BaseContext> exit, Func<BaseContext, T> change)
         {
             this.enter = enter;
             this.update = update;
@@ -22,32 +22,32 @@ namespace TBFramework.AI.FSM.Simple
         /// <summary>
         /// 进入该AI状态要进行的逻辑操作
         /// </summary>
-        public Action<V> enter;
+        public Action<BaseContext> enter;
 
         /// <summary>
         /// 更新该AI状态要进行的逻辑操作
         /// </summary>
-        public Action<V> update;
+        public Action<BaseContext> update;
 
         /// <summary>
         /// 晚更新该AI状态要进行的逻辑操作
         /// </summary>
-        public Action<V> lateUpdate;
+        public Action<BaseContext> lateUpdate;
 
         /// <summary>
         /// 固定更新该AI状态要进行的逻辑操作
         /// </summary>
-        public Action<V> fixedUpdate;
+        public Action<BaseContext> fixedUpdate;
 
         /// <summary>
         /// 退出该AI状态要进行的逻辑操作
         /// </summary>
-        public Action<V> exit;
+        public Action<BaseContext> exit;
 
         /// <summary>
         /// 检查是否切换其他状态
         /// </summary>
-        public Func<V, T> change;
+        public Func<BaseContext, T> change;
 
         public override void Reset()
         {

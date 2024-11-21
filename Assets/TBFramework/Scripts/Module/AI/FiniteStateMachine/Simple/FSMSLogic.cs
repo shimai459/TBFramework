@@ -7,15 +7,15 @@ using TBFramework.Pool;
 /// </summary>
 namespace TBFramework.AI.FSM.Simple
 {
-    public class FSMSLogic<T, V> : FSMSBaseLogic
+    public class FSMSLogic<T> : FSMSBaseLogic
     {
-        private Dictionary<T, FSMSState<T, V>> stateDic = new Dictionary<T, FSMSState<T, V>>();
+        private Dictionary<T, FSMSState<T>> stateDic = new Dictionary<T, FSMSState<T>>();
 
         private T defaultState;
         private T nowState;
         private T previousState;
 
-        private V param;
+        private BaseContext param;
 
         private bool isAddListen = false;
 
@@ -27,7 +27,7 @@ namespace TBFramework.AI.FSM.Simple
             isAddListen = true;
         }
 
-        public void Set(V param, T defaultState, params (T key, FSMSState<T, V> state)[] states)
+        public void Set(BaseContext param, T defaultState, params (T key, FSMSState<T> state)[] states)
         {
             this.param = param;
             this.AddStates(states);
@@ -48,15 +48,15 @@ namespace TBFramework.AI.FSM.Simple
 
         public void ChangeParam(string valueName, object value)
         {
-            param.GetType().GetProperty(valueName).SetValue(param, value);
+            param.SetValue(valueName, value);
         }
 
-        public V GetParam()
+        public BaseContext GetParam()
         {
             return param;
         }
 
-        public void AddState(T key, FSMSState<T, V> state)
+        public void AddState(T key, FSMSState<T> state)
         {
             if (!stateDic.ContainsKey(key))
             {
@@ -64,7 +64,7 @@ namespace TBFramework.AI.FSM.Simple
             }
         }
 
-        public void AddStates(params (T key, FSMSState<T, V> state)[] states)
+        public void AddStates(params (T key, FSMSState<T> state)[] states)
         {
             foreach (var item in states)
             {
@@ -81,7 +81,7 @@ namespace TBFramework.AI.FSM.Simple
             }
         }
 
-        public void RemoveState(FSMSState<T, V> state)
+        public void RemoveState(FSMSState<T> state)
         {
             if (stateDic.ContainsValue(state))
             {
@@ -105,7 +105,7 @@ namespace TBFramework.AI.FSM.Simple
             }
         }
 
-        public void RemoveStates(params FSMSState<T, V>[] states)
+        public void RemoveStates(params FSMSState<T>[] states)
         {
             foreach (var item in states)
             {
@@ -156,7 +156,7 @@ namespace TBFramework.AI.FSM.Simple
 
         public void Clear()
         {
-            foreach (FSMSState<T, V> item in stateDic.Values)
+            foreach (FSMSState<T> item in stateDic.Values)
             {
                 CPoolManager.Instance.Push(item);
             }
@@ -171,6 +171,7 @@ namespace TBFramework.AI.FSM.Simple
             MonoConManager.Instance.RemoveFixedUpdateListener(FixedUpdate);
             isAddListen = false;
             this.Clear();
+            this.param = default(BaseContext);
             this.nowState = default(T);
             this.defaultState = default(T);
             this.previousState = default(T);
