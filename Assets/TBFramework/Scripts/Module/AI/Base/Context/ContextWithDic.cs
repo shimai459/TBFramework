@@ -6,6 +6,8 @@ namespace TBFramework.AI
     {
         private Dictionary<string, object> dataDic = new Dictionary<string, object>();
 
+        public int Count => dataDic.Count;
+
         public override object GetValue(string key)
         {
             if (dataDic.ContainsKey(key))
@@ -40,6 +42,14 @@ namespace TBFramework.AI
             }
         }
 
+        public void SetValues(params (string key, object value)[] values)
+        {
+            foreach ((string key, object value) value in values)
+            {
+                SetValue(value.key, value.value);
+            }
+        }
+
         public bool ContainsKey(string key)
         {
             return dataDic.ContainsKey(key);
@@ -57,14 +67,50 @@ namespace TBFramework.AI
             }
         }
 
-        public void RemoveData(string key)
+        public void AddValues(params (string key, object value)[] values)
+        {
+            foreach ((string key, object value) value in values)
+            {
+                AddValue(value.key, value.value);
+            }
+        }
+
+        public void RemoveValue(string key)
         {
             dataDic.Remove(key);
+        }
+
+        public void RemoveValues(params string[] keys)
+        {
+            foreach (string key in keys)
+            {
+                RemoveValue(key);
+            }
         }
 
         public override void Reset()
         {
             this.dataDic.Clear();
+        }
+
+        public bool Compare(ContextWithDic other)
+        {
+            if (this == other)
+            {
+                return true;
+            }
+            if (this.Count == other.Count)
+            {
+                foreach (var item in dataDic)
+                {
+                    if (!other.ContainsKey(item.Key) || !item.Value.Equals(other.GetValue(item.Key)))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
         }
     }
 }

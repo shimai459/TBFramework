@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using TBFramework.Mono;
+using TBFramework.Pool;
 
 namespace TBFramework.AI.FSM.Simple
 {
@@ -66,7 +67,7 @@ namespace TBFramework.AI.FSM.Simple
 
         public void AddLogic(T key, FSMSBaseLogic logic)
         {
-            if (!logics.ContainsKey(key))
+            if (!logics.ContainsKey(key) && KeyBase.IsLegal(logic))
             {
                 logics.Add(key, logic);
                 FSMSManager.Instance.logics.AddUse(logic);

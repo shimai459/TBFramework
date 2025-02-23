@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using TBFramework.Mono;
+using TBFramework.Pool;
 
 namespace TBFramework.AI.FSM.Detail
 {
@@ -52,7 +53,7 @@ namespace TBFramework.AI.FSM.Detail
 
         public void AddState(T key, FSMDState state)
         {
-            if (!states.ContainsKey(key))
+            if (!states.ContainsKey(key) && KeyBase.IsLegal(state))
             {
                 states.Add(key, state);
                 FSMDManager.Instance.states.AddUse(state);

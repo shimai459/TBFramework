@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using TBFramework.Pool;
 
 
 namespace TBFramework.AI.BT
@@ -44,14 +45,18 @@ namespace TBFramework.AI.BT
 
         public void AddNode(BTNode node)
         {
-            nodes.Add(node);
+            if (KeyBase.IsLegal(node))
+            {
+                nodes.Add(node);
+                BTManager.Instance.nodes.AddUse(node);
+            }
         }
 
         public void AddNodes(params BTNode[] nodes)
         {
             foreach (BTNode node in nodes)
             {
-                this.nodes.Add(node);
+                AddNode(node);
             }
         }
 
@@ -59,7 +64,7 @@ namespace TBFramework.AI.BT
         {
             foreach (BTNode node in nodes)
             {
-                this.nodes.Add(node);
+                AddNode(node);
             }
         }
 
@@ -68,6 +73,7 @@ namespace TBFramework.AI.BT
             if (nodes.Contains(node))
             {
                 nodes.Remove(node);
+                BTManager.Instance.nodes.Destory(node);
             }
         }
 
@@ -77,7 +83,7 @@ namespace TBFramework.AI.BT
             {
                 if (this.nodes.Contains(node))
                 {
-                    this.nodes.Remove(node);
+                    RemoveNode(node);
                 }
             }
         }
@@ -88,7 +94,7 @@ namespace TBFramework.AI.BT
             {
                 if (this.nodes.Contains(node))
                 {
-                    this.nodes.Remove(node);
+                    RemoveNode(node);
                 }
             }
         }

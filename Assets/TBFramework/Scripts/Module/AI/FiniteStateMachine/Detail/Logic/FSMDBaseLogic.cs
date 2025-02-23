@@ -8,6 +8,8 @@ namespace TBFramework.AI.FSM.Detail
 
         public virtual void SetContext(BaseContext context)
         {
+            FSMDManager.Instance.contexts.AddUse(context.key);
+            FSMDManager.Instance.contexts.Destory(this.context.key);
             this.context = context;
         }
 
@@ -25,6 +27,8 @@ namespace TBFramework.AI.FSM.Detail
 
         public void SetTransition(FSMDBaseTransition transition)
         {
+            FSMDManager.Instance.transitions.AddUse(transition.key);
+            FSMDManager.Instance.transitions.Destory(this.transition.key);
             this.transition = transition;
         }
 

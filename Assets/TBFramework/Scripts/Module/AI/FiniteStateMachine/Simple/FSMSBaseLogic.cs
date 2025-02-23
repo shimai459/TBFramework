@@ -1,4 +1,5 @@
 using System;
+using TBFramework.Pool;
 
 namespace TBFramework.AI.FSM.Simple
 {
@@ -8,6 +9,10 @@ namespace TBFramework.AI.FSM.Simple
 
         public virtual void SetContext(BaseContext context)
         {
+            if (this.context != null)
+                FSMSManager.Instance.contexts.Destory(this.context.key);
+            if (context != null)
+                FSMSManager.Instance.contexts.AddUse(context.key);
             this.context = context;
         }
 

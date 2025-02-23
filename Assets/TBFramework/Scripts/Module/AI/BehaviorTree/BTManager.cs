@@ -8,14 +8,15 @@ namespace TBFramework.AI.BT
         #region BT
         public BaseMgrObj<BehaviorTree> bts = new BaseMgrObj<BehaviorTree>();
 
-        public BehaviorTree CreateBT(BTNode root, BaseContext context)
+        public BehaviorTree CreateBT(BTNode root, BaseContext context, bool isAddUseMeself = false)
         {
             BehaviorTree bt = CPoolManager.Instance.Pop<BehaviorTree>();
             bt.Set(root, context);
             bts.Create(bt);
-            bts.AddUse(bt);
-            nodes.AddUse(root);
-            contexts.AddUse(context);
+            if (isAddUseMeself)
+            {
+                bts.AddUse(bt);
+            }
             return bt;
         }
 

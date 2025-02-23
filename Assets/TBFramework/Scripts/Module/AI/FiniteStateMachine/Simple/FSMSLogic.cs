@@ -56,7 +56,7 @@ namespace TBFramework.AI.FSM.Simple
 
         public void AddState(T key, FSMSState<T> state)
         {
-            if (!stateDic.ContainsKey(key))
+            if (!stateDic.ContainsKey(key) && KeyBase.IsLegal(state))
             {
                 stateDic.Add(key, state);
                 FSMSManager.Instance.states.AddUse(state);
@@ -116,7 +116,7 @@ namespace TBFramework.AI.FSM.Simple
         {
             foreach (FSMSState<T> item in stateDic.Values)
             {
-                CPoolManager.Instance.Push(item);
+                FSMSManager.Instance.states.Destory(item.key);
             }
             this.stateDic.Clear();
         }

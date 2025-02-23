@@ -10,6 +10,8 @@ namespace TBFramework.AI.BT
 
         public void SetNode(BTNode node)
         {
+            BTManager.Instance.nodes.AddUse(node);
+            BTManager.Instance.nodes.Destory(this.node);
             this.node = node;
         }
 

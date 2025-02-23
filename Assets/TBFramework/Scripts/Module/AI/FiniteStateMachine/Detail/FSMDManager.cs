@@ -9,47 +9,57 @@ namespace TBFramework.AI.FSM.Detail
         #region Logic
         public BaseMgrObj<FSMDBaseLogic> logics = new BaseMgrObj<FSMDBaseLogic>();
 
-        public FSMDLogic<T> CreateFSMD<T>(T defaultState, BaseContext context, params (T key, FSMDState state)[] states)
+        public FSMDLogic<T> CreateFSMD<T>(T defaultState, BaseContext context, bool isAddUseMeself = false, params (T key, FSMDState state)[] states)
         {
             FSMDLogic<T> logic = CPoolManager.Instance.Pop<FSMDLogic<T>>();
             logic.Set(defaultState, states);
             logic.SetContext(context);
             logic.StartLogic();
-            contexts.AddUse(context);
             logics.Create(logic);
-            logics.AddUse(logic);
+            if (isAddUseMeself)
+            {
+                logics.AddUse(logic);
+            }
             return logic;
         }
 
-        public FSMDLogic<T> CreateFSMD<T>(T defaultState, FSMDTransitionNoParam<T> transition, params (T key, FSMDState state)[] states)
+        public FSMDLogic<T> CreateFSMD<T>(T defaultState, FSMDTransitionNoParam<T> transition, bool isAddUseMeself = false, params (T key, FSMDState state)[] states)
         {
             FSMDLogic<T> logic = CPoolManager.Instance.Pop<FSMDLogic<T>>();
             logic.Set(defaultState, states);
             logic.SetTransition(transition);
-            transitions.AddUse(transition);
             logics.Create(logic);
-            logics.AddUse(logic);
+            if (isAddUseMeself)
+            {
+                logics.AddUse(logic);
+            }
             return logic;
         }
 
-        public FSMDLogicArray<T> CreateFSMDArray<T>(BaseContext context, T defaultState, params (T key, FSMDBaseLogic logic)[] logics)
+        public FSMDLogicArray<T> CreateFSMDArray<T>(BaseContext context, T defaultState, bool isAddUseMeself = false, params (T key, FSMDBaseLogic logic)[] logics)
         {
             FSMDLogicArray<T> logicArray = CPoolManager.Instance.Pop<FSMDLogicArray<T>>();
             logicArray.SetContext(context);
             logicArray.Set(defaultState, logics);
             logicArray.StartLogic();
-            contexts.AddUse(context);
-            this.logics.AddUse(logicArray);
+            this.logics.Create(logicArray);
+            if (isAddUseMeself)
+            {
+                this.logics.AddUse(logicArray);
+            }
             return logicArray;
         }
 
-        public FSMDLogicArray<T> CreateFSMDArray<T>(T defaultState, FSMDTransitionNoParam<T> transition, params (T key, FSMDBaseLogic logic)[] logics)
+        public FSMDLogicArray<T> CreateFSMDArray<T>(T defaultState, FSMDTransitionNoParam<T> transition, bool isAddUseMeself = false, params (T key, FSMDBaseLogic logic)[] logics)
         {
             FSMDLogicArray<T> logicArray = CPoolManager.Instance.Pop<FSMDLogicArray<T>>();
             logicArray.Set(defaultState, logics);
             logicArray.SetTransition(transition);
-            this.logics.AddUse(logicArray);
-            this.transitions.AddUse(transition);
+            this.logics.Create(logicArray);
+            if (isAddUseMeself)
+            {
+                this.logics.AddUse(logicArray);
+            }
             return logicArray;
         }
 
@@ -123,10 +133,6 @@ namespace TBFramework.AI.FSM.Detail
         {
             FSMDState state = CPoolManager.Instance.Pop<FSMDState>();
             state.Set(enter, update, exit, transition);
-            actions.AddUse(enter.key);
-            actions.AddUse(update.key);
-            actions.AddUse(exit.key);
-            transitions.AddUse(transition.key);
             states.Create(state);
             return state;
         }
@@ -135,12 +141,6 @@ namespace TBFramework.AI.FSM.Detail
         {
             FSMDState state = CPoolManager.Instance.Pop<FSMDState>();
             state.Set(enter, update, lateUpdate, fixedUpdate, exit, transition);
-            actions.AddUse(enter.key);
-            actions.AddUse(update.key);
-            actions.AddUse(lateUpdate.key);
-            actions.AddUse(fixedUpdate.key);
-            actions.AddUse(exit.key);
-            transitions.AddUse(transition.key);
             states.Create(state);
             return state;
         }

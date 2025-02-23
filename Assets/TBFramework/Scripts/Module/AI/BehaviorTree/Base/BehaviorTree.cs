@@ -24,8 +24,12 @@ namespace TBFramework.AI.BT
                 MonoConManager.Instance.AddUpdateListener(Update);
                 isAddListen = true;
             }
+            BTManager.Instance.nodes.Destory(this.root);
+            BTManager.Instance.contexts.Destory(this.context);
             this.root = root;
             this.context = context;
+            BTManager.Instance.nodes.AddUse(root);
+            BTManager.Instance.contexts.AddUse(context);
         }
 
         public BaseContext GetContext()
