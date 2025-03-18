@@ -4,7 +4,6 @@ using UnityEngine.EventSystems;
 using System;
 using UnityEngine.Events;
 using System.Linq;
-using UnityEditor;
 using UnityEngine.UI;
 using TBFramework.LoadInfo;
 using TBFramework.Pool;
@@ -229,10 +228,7 @@ namespace TBFramework.UI
                         {
                             if (panelLoadInfo.isDestroy == true)
                             {
-                                if (!(PrefabUtility.GetPrefabInstanceStatus(o) != PrefabInstanceStatus.NotAPrefab || PrefabUtility.GetPrefabAssetType(o) != PrefabAssetType.NotAPrefab))
-                                {
-                                    GameObject.Destroy(o);
-                                }
+                                GameObject.Destroy(o);
                                 CPoolManager.Instance.Push<PanelLoadInfo>(panelLoadInfo);
                                 panelDict.Remove(panelName);
                                 return;
@@ -243,10 +239,7 @@ namespace TBFramework.UI
 
                 GameObject obj = o;
                 //判断是否实例化
-                if (PrefabUtility.GetPrefabInstanceStatus(o) != PrefabInstanceStatus.NotAPrefab || PrefabUtility.GetPrefabAssetType(o) != PrefabAssetType.NotAPrefab)
-                {
-                    obj = GameObject.Instantiate(o);
-                }
+                obj = GameObject.Instantiate(o);
                 //去除Unity自动添加的(Clone)，防止UI事件添加失效
                 if (obj.name.Contains("(Clone)") && obj.name.LastIndexOf("(Clone)") == obj.name.Length - 7)
                 {
