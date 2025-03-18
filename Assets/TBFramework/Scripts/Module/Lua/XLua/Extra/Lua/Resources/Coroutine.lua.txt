@@ -1,0 +1,5 @@
+Object:subClass("Coroutine")
+Coroutine.util = require("xlua.util")
+function Coroutine:StartCoroutine(func)
+    return self.util.cs_generator(func)
+end

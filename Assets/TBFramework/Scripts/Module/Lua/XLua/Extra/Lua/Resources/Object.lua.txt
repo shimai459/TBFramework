@@ -1,0 +1,16 @@
+Object = {}
+
+function Object:new()
+    local obj = {};
+    setmetatable(obj, self);
+    self.__index = self;
+    return obj;
+end
+
+function Object:subClass(ClassName)
+    _G[ClassName] = {}
+    local obj = _G[ClassName]
+    setmetatable(obj, self);
+    self.__index = self;
+    obj.base = self
+end

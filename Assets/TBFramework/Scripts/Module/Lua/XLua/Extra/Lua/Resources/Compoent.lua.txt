@@ -1,0 +1,22 @@
+Object:subClass("Compoent")
+
+function Compoent:new(gameObject, isEnabled)
+    local obj = Compoent.base.new(self)
+    if (isEnabled == nil) then
+        obj.isEnabled = true
+    else
+        obj.isEnabled = isEnabled
+    end
+    obj.gameObject = gameObject
+    return obj
+end
+
+function Compoent:subClass(ClassName, addMore)
+    Compoent.base.subClass(self, ClassName)
+    _G[ClassName].name = ClassName
+    if (addMore ~= nil) then
+        _G[ClassName].addMore = addMore
+    else
+        _G[ClassName].addMore = true
+    end
+end
