@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using TBFramework.Resource;
-using UnityEditor;
 using TBFramework.LoadInfo;
-using TBFramework.AssetBundles;
 
 namespace TBFramework.Pool
 {
@@ -45,10 +42,7 @@ namespace TBFramework.Pool
                 {
                     GameObject obj = o;
                     //判断是否是预制体，是就实例化
-                    if (PrefabUtility.GetPrefabInstanceStatus(o) != PrefabInstanceStatus.NotAPrefab || PrefabUtility.GetPrefabAssetType(o) != PrefabAssetType.NotAPrefab)
-                    {
-                        obj = GameObject.Instantiate(o);
-                    }
+                    obj = GameObject.Instantiate(o);
                     obj.name = poolName;
                     obj.transform.SetParent(fatherObj);
                     if (!poolDict.ContainsKey(poolName))
