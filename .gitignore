@@ -82,6 +82,8 @@ AssetBundles/
 /[Aa]ssets/*
 !/[Aa]ssets/TBFramework
 /[Aa]ssets/TBFramework/Automation
-!/[Aa]ssets/TBFramework/Scripts/Module/AssetBundles
+!/[Aa]ssets/TBFramework/Scripts/Module/Load/AssetBundles
+
+/ServerData/
 
 
